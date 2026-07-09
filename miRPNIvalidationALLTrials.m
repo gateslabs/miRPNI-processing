@@ -1,4 +1,4 @@
-function validationz = miRPNIvalidationALLTrials(matfiles, set) % tt = miRPNIvalidationALLTrials(matFiles, movements, 1)
+function validationz = miRPNIvalidationALLTrials(matfiles, set, win_ms) % tt = miRPNIvalidationALLTrials(matFiles, movements, 1)
 % inputs:
 % matfiles: a list of days to grab from, for example - 
 % matFiles    = {'P3_S1_EMG.mat', 'P3_S2_EMG.mat', 'P3_S3_EMG.mat',...
@@ -10,6 +10,7 @@ function validationz = miRPNIvalidationALLTrials(matfiles, set) % tt = miRPNIval
 % 'P1_S7_EMG.mat','P1_S8_EMG.mat','P1_S9_EMG.mat', 'P1_S10_EMG.mat', 'P1_S11_EMG.mat', 'P1_S12_EMG.mat'};
 % set: run for either set 1 (rest, fist, pinch, point) or set 2 (rest, thumb, idx, middle)
 
+if nargin < 3, win_ms = 50; end
 largeDB = struct([]); %empty dataset to add to.
 
 %%
@@ -47,35 +48,45 @@ for fileIdx = 1:numel(matfiles)
     
     taskNumbers = [miDB.TaskNumber];
     g = ismember(string(taskNumbers), keymovements);
-    miDB2 = miDB(g);
+    miDB = miDB(g);
 
 
     % grab only the MAVs relevant to movement (not based on movement onset atm)
-    for i = 1:numel(miDB2)
-        winStart = length(miDB2(i).MAVs)-miDB2(i).HoldTime+1; %this should ensure start of hold time regardless of rest time
-        %winStart = miDB(i).HoldTime + 1000; %a thousand ms into hold period 
-        winEnd = winStart + 999;
+    for i = 1:numel(miDB)
+% --- Cue timing (edit to match your protocol) ---
+    %we want to start about a second into the nominal movement time to
+    %ensure that actual movement movement is being done here. so, we'll add
+    %the equivalent of an extra second to account for that.
+
+    cue_start_s = (miDB(i).RestTime + 1000)/1000; %HoldTime/1000; %for s     %4.0;   % e.g. cue appears at 2s into the trial
+    cue_end_s   = (miDB(i).RestTime + 2000)/1000; %for s  % e.g. movement expected to be complete by 4s
     
-        miDB2(i).MAVz = miDB2(i).MAVs([winStart:winEnd],:);
+    % Convert to MAV window indices
+    cue_start_win = floor(cue_start_s / (win_ms/1000)) + 1;  % +1 for 1-based indexing
+    cue_end_win   = floor(cue_end_s   / (win_ms/1000));
+   
+    MAV = miDB(i).MAVs; %grabbing respective MAV matrix
     
-        % collapse into a 1xnumchans array for prediction
-        miDB2(i).MAVcollapse = mean(miDB2(i).MAVz,1); % (averaged across timesteps)
+    % Extract MAV only within the cue window
+    miDB(i).MAV_cue = MAV(cue_start_win : cue_end_win,:);   % [n_cue_windows x 1]
+    miDB(i).MAV_collapse = mean(miDB(i).MAV_cue,1); %summing MAVs across channels for a single vector
         
         %for sanity's sake: add session number to database
-        miDB2(i).SessionNumber = fileIdx;
+    miDB(i).SessionNumber = fileIdx;
     end
 
-    %append to larger matrix if anything exists in miDB2
-    if size(miDB2,2) > 0
-        largeDB = [largeDB,miDB2];
-    end
+    %append to larger matrix
+    largeDB = [largeDB,miDB];
 end
     
 %
 
-%% Format Data for fitc* commands
+%%
 
-disp('Extracting and formatting data...');
+% =========================================================================
+% Step 2: Format Data for fitc* commands (Revised for compatibility)
+% =========================================================================
+disp('Step 2: Extracting and formatting data...');
 
 numTrials = length(largeDB);
 X = []; % Predictor matrix (Features)
@@ -84,7 +95,7 @@ Y = {}; % Response cell array (Labels) - Changed to cell array
 for i = 1:numTrials
     % Extract the MAV features for this trial
     %currentFeatures = miDB(i).MAVz; 
-    currentFeatures = largeDB(i).MAVcollapse;
+    currentFeatures = largeDB(i).MAV_collapse;
     
     % Check if MAVs is empty or invalid
     if ischar(currentFeatures) || isstring(currentFeatures)
@@ -102,10 +113,13 @@ for i = 1:numTrials
 end
 
 disp(['Data formatted! Total samples: ', num2str(size(X,1)), ', Features: ', num2str(size(X,2))]);
+% We skip the categorical conversion entirely now!
 
-
-%% Split Data into Training and Testing Sets (Manual Split)
-disp('Splitting data into train/test sets using randperm...');
+%%
+% =========================================================================
+% Step 3: Split Data into Training and Testing Sets (Manual Split)
+% =========================================================================
+disp('Step 3: Splitting data into train/test sets using randperm...');
 
 % Get the total number of rows
 numObservations = size(X, 1);
@@ -135,9 +149,11 @@ validationz.Y_train = Y_train;
 validationz.X_test = X_test;
 validationz.Y_test = Y_test;
 
-%% Train Classifiers
-
-disp('Training Classifiers...');
+%%
+% =========================================================================
+% Step 4: Train Classifiers
+% =========================================================================
+disp('Step 4: Training Classifiers...');
 
 % 1. Decision Tree
 disp(' - Training Decision Tree (fitctree)...');
@@ -157,9 +173,11 @@ validationz.mdlTree = mdlTree;
 validationz.mdlKNN = mdlKNN;
 validationz.mdlLDA = mdlLDA;
 
-%% Make Predictions
-
-disp('Making predictions on test data...');
+%%
+% =========================================================================
+% Step 5: Make Predictions
+% =========================================================================
+disp('Step 5: Making predictions on test data...');
 predTree = predict(mdlTree, X_test);
 predKNN  = predict(mdlKNN, X_test);
 predLDA  = predict(mdlLDA, X_test);
@@ -168,20 +186,24 @@ validationz.predTree = predTree;
 validationz.predKNN = predKNN;
 validationz.predLDA = predLDA;
 
-% Calculate overall percentage accuracy for each model
+% 5a. Calculate overall percentage accuracy for each model
 disp(' - Calculating overall accuracy...');
 accTree = round(sum(cellfun(@strcmp, Y_test, predTree)) / length(Y_test) * 100, 2);
 accKNN  = round(sum(cellfun(@strcmp, Y_test, predKNN)) / length(Y_test) * 100, 2);
 accLDA  = round(sum(cellfun(@strcmp, Y_test, predLDA)) / length(Y_test) * 100, 2);
 
 
-%% Visualize Results (Confusion Matrices)
+%%
+% =========================================================================
+% Step 6: Visualize Results (Confusion Matrices)
+% =========================================================================
 disp('Step 6: Generating Confusion Matrices...');
 
 % 5b. Create a new, multi-panel figure
 mainFig = figure('WindowState', 'maximized', 'Name', 'Multi-Model Performance Comparison', 'NumberTitle', 'off');
 
 % Use tiledlayout to create a 1 row x 3 column grid of subplots.
+% If you have an older MATLAB version, you would use 'subplot(1,3,1)' etc.
 tl = tiledlayout(mainFig, 1, 3);
 tl.TileSpacing = 'compact';
 tl.Padding = 'compact';
@@ -224,6 +246,8 @@ validationz.modelNames = {'Decision Tree', 'k-NN', 'LDA'};
 disp('accuracies');
 disp(validationz.modelNames)
 disp(validationz.accuracies)
+
+
 
 disp('storing and exporting data')
 
