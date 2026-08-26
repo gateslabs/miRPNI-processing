@@ -1,7 +1,7 @@
 % Plots all EMG channels from a given session
 % Uses channel names from participant's metadata.json and trial info from
 % the corresponding metadata file.
-% Produces a grid of subplots with an optional vertical onset line.
+% Produces a grid of subplots
 
 clear; clc;
 
@@ -14,7 +14,7 @@ FS             = 1000;   % sampling rate (Hz)
 TRIAL_ID       = 53;      % which trial to plot (ignored when PLOT_MEAN = true)
 MOVEMENT_NUMBER = 1;     % movement to average (used when PLOT_MEAN = true)
 PLOT_MEAN      = false;  % false = single trial | true = mean across movement trials
-SHOW_ONSET     = true;   % draw vertical dashed line at movement onset
+
 
 %% Load metadata ─────────────────────────────────────────────────────────
 % Channel names
@@ -31,11 +31,11 @@ tr_raw     = jsondecode(fileread(TRIAL_META_PATH));
 trial_ids  = [tr_raw.trialID]';
 move_nums  = [tr_raw.movementNumber]';
 trial_nums = [tr_raw.trialNumber]';
-onset_times = [tr_raw.onsetIDX]';
+
 
 % Table for easy lookup
-trial_meta = table(trial_ids, move_nums, trial_nums, onset_times, ...
-    'VariableNames', {'trialID','movementNumber','trialNumber','onsetTime'});
+trial_meta = table(trial_ids, move_nums, trial_nums, ...
+    'VariableNames', {'trialID','movementNumber','trialNumber'});
 
 fprintf('Channels : %s\n', strjoin(ch_names, ', '));
 fprintf('Trials   : %d | Movements: %s\n', height(trial_meta), ...
@@ -61,13 +61,11 @@ for tid = unique(trials_col)'
 end
 T.time_s = time_s;
 
-% Merge movementNumber and onsetTime into T
+% Merge movementNumber into T
 T.movementNumber = nan(height(T), 1);
-T.onsetTime      = nan(height(T), 1);
 for i = 1:height(trial_meta)
     mask = T.trialID == trial_meta.trialID(i);
     T.movementNumber(mask) = trial_meta.movementNumber(i);
-    T.onsetTime(mask)      = trial_meta.onsetTime(i);
 end
 
 fprintf('Loaded %d rows, %d channels.\n', height(T), n_ch);
@@ -76,7 +74,6 @@ fprintf('Loaded %d rows, %d channels.\n', height(T), n_ch);
 if PLOT_MEAN
     subset_mask = T.movementNumber == MOVEMENT_NUMBER;
     subset      = T(subset_mask, :);
-    onset_time  = mean(subset.onsetTime, 'omitnan');
     n_trials    = numel(unique(subset.trialID));
 
     % Average each channel over trials at the same time point
@@ -96,7 +93,6 @@ if PLOT_MEAN
 else
     row_mask   = T.trialID == TRIAL_ID;
     subset     = T(row_mask, :);
-    onset_time = subset.onsetTime(1);
     mov_num    = subset.movementNumber(1);
     tr_num     = trial_meta.trialNumber(trial_meta.trialID == TRIAL_ID);
     plot_time  = subset.time_s;
@@ -106,7 +102,6 @@ else
 end
 
 fprintf('Plotting : %s\n', fig_title);
-fprintf('Onset    : %.3f s\n', onset_time);
 
 %% 5. Plot ──────────────────────────────────────────────────────────────────
 % Color palette (one per channel)
@@ -125,10 +120,6 @@ for ci = 1:n_ch
         'Color', colors(ci, :), 'LineWidth', 0.6);
     hold on;
 
-    % Onset line
-    if SHOW_ONSET
-        xline(onset_time, '--r', 'LineWidth', 0.9, 'Alpha', 0.8);
-    end
 
     % title(ch_names{ci}, 'FontWeight', 'bold', 'FontSize', 10);
     % xlabel('Time (s)', 'FontSize', 8);
