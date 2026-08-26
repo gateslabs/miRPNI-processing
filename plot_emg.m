@@ -7,7 +7,7 @@ clear; clc;
 
 %% Settings ──────────────────────────────────────────────────────────────
 DATA_PATH      = 'P2_S12_EMG1kHz.txt';
-CH_META_PATH   = 'metadata.json';
+CH_META_PATH   = '/Users/siege/Documents/balthasar_local/mirpni/submission_3/processing_code/csv/P2_metadata.json';
 TRIAL_META_PATH = 'P2_S12_meta.json';
 
 FS             = 1000;   % sampling rate (Hz)
