@@ -1,4 +1,4 @@
-% Plots all EMG channels from a given session
+% Plots all EMG channels from a given session using a .txt file
 % Uses channel names from participant's metadata.json and trial info from
 % the corresponding metadata file.
 % Produces a grid of subplots
@@ -6,12 +6,12 @@
 clear; clc;
 
 %% Settings ──────────────────────────────────────────────────────────────
-DATA_PATH      = 'P2_S12_EMG1kHz.txt';
-CH_META_PATH   = 'metadata.json';
-TRIAL_META_PATH = 'P2_S12_meta.json';
+DATA_PATH      = "M:\Journal Publications\_Submitted\2025_Nwokeabia_MiRPNI\Submission 3\dataset_v4\test\P1_S1_EMG1kHz.csv";
+CH_META_PATH   = "M:\Journal Publications\_Submitted\2025_Nwokeabia_MiRPNI\Submission 3\dataset_v4\test\P1_metadata.json";
+TRIAL_META_PATH = "M:\Journal Publications\_Submitted\2025_Nwokeabia_MiRPNI\Submission 3\dataset_v4\test\P1_S1_meta.json";
 
 FS             = 1000;   % sampling rate (Hz)
-TRIAL_ID       = 53;      % which trial to plot (ignored when PLOT_MEAN = true)
+TRIAL_ID       = 10;      % which trial to plot (ignored when PLOT_MEAN = true)
 MOVEMENT_NUMBER = 1;     % movement to average (used when PLOT_MEAN = true)
 PLOT_MEAN      = false;  % false = single trial | true = mean across movement trials
 
@@ -28,14 +28,14 @@ ch_names  = ch_names(idx);   % 1xnumchans cell, ordered by channel number
 
 % Trial metadata
 tr_raw     = jsondecode(fileread(TRIAL_META_PATH));
-trial_ids  = [tr_raw.trialID]';
-move_nums  = [tr_raw.movementNumber]';
-trial_nums = [tr_raw.trialNumber]';
+trial_ids  = [tr_raw.TrialID]';
+move_nums  = [tr_raw.TaskNumber]';
+trial_nums = [tr_raw.TrialNumber]';
 
 
 % Table for easy lookup
 trial_meta = table(trial_ids, move_nums, trial_nums, ...
-    'VariableNames', {'trialID','movementNumber','trialNumber'});
+    'VariableNames', {'TrialID','TaskNumber','TrialNumber'});
 
 fprintf('Channels : %s\n', strjoin(ch_names, ', '));
 fprintf('Trials   : %d | Movements: %s\n', height(trial_meta), ...
@@ -53,7 +53,7 @@ emg_col_names = T.Properties.VariableNames(startsWith( ...
 n_ch = numel(emg_col_names);
 
 % Add within-trial time
-trials_col = T.trialID;
+trials_col = T.TrialID;
 time_s     = zeros(height(T), 1);
 for tid = unique(trials_col)'
     mask = trials_col == tid;
@@ -61,20 +61,20 @@ for tid = unique(trials_col)'
 end
 T.time_s = time_s;
 
-% Merge movementNumber into T
-T.movementNumber = nan(height(T), 1);
+% Merge TaskNumber into T
+T.TaskNumber = nan(height(T), 1);
 for i = 1:height(trial_meta)
-    mask = T.trialID == trial_meta.trialID(i);
-    T.movementNumber(mask) = trial_meta.movementNumber(i);
+    mask = T.TrialID == trial_meta.TrialID(i);
+    T.TaskNumber(mask) = trial_meta.TaskNumber(i);
 end
 
 fprintf('Loaded %d rows, %d channels.\n', height(T), n_ch);
 
 %% Select data to plot ───────────────────────────────────────────────────
 if PLOT_MEAN
-    subset_mask = T.movementNumber == MOVEMENT_NUMBER;
+    subset_mask = T.TaskNumber == MOVEMENT_NUMBER;
     subset      = T(subset_mask, :);
-    n_trials    = numel(unique(subset.trialID));
+    n_trials    = numel(unique(subset.TrialID));
 
     % Average each channel over trials at the same time point
     time_axis = unique(subset.time_s);
@@ -91,10 +91,10 @@ if PLOT_MEAN
     fig_title = sprintf('Mean EMG — Movement %d  (n=%d trials)', ...
         MOVEMENT_NUMBER, n_trials);
 else
-    row_mask   = T.trialID == TRIAL_ID;
+    row_mask   = T.TrialID == TRIAL_ID;
     subset     = T(row_mask, :);
-    mov_num    = subset.movementNumber(1);
-    tr_num     = trial_meta.trialNumber(trial_meta.trialID == TRIAL_ID);
+    mov_num    = subset.TaskNumber(1);
+    tr_num     = trial_meta.TrialNumber(trial_meta.TrialID == TRIAL_ID);
     plot_time  = subset.time_s;
     plot_data  = table2array(subset(:, emg_col_names));  % [samples x channels]
     fig_title  = sprintf('EMG — Trial %d  (Movement %d, Rep %d)', ...
@@ -121,7 +121,7 @@ for ci = 1:n_ch
     hold on;
 
 
-    % title(ch_names{ci}, 'FontWeight', 'bold', 'FontSize', 10);
+    title(ch_names{ci}, 'FontWeight', 'bold', 'FontSize', 10);
     % xlabel('Time (s)', 'FontSize', 8);
     % ylabel('Amplitude (µV)', 'FontSize', 8);
     xlim([0 max(plot_time)]);
