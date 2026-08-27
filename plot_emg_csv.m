@@ -6,12 +6,12 @@
 clear; clc;
 
 %% Settings ──────────────────────────────────────────────────────────────
-DATA_PATH      = 'P1_S12_EMG1kHz.txt';
-CH_META_PATH   = 'csv/P2_metadata.json';
-TRIAL_META_PATH = 'P1_S12.json';
+DATA_PATH      = "M:\Journal Publications\_Submitted\2025_Nwokeabia_MiRPNI\Submission 3\dataset_v4\test\P1_S1_EMG1kHz.csv";
+CH_META_PATH   = "M:\Journal Publications\_Submitted\2025_Nwokeabia_MiRPNI\Submission 3\dataset_v4\test\P1_metadata.json";
+TRIAL_META_PATH = "M:\Journal Publications\_Submitted\2025_Nwokeabia_MiRPNI\Submission 3\dataset_v4\test\P1_S1_meta.json";
 
 FS             = 1000;   % sampling rate (Hz)
-TRIAL_ID       = 53;      % which trial to plot (ignored when PLOT_MEAN = true)
+TRIAL_ID       = 10;      % which trial to plot (ignored when PLOT_MEAN = true)
 MOVEMENT_NUMBER = 1;     % movement to average (used when PLOT_MEAN = true)
 PLOT_MEAN      = false;  % false = single trial | true = mean across movement trials
 
