@@ -3,21 +3,21 @@
 % with one element per trial, and fields:
 %   TrialID, TaskNumber, TrialNumber, RestTime, HoldTime,
 %   EMG30k, EMG30kf, EMG1k, EMG1kf, MAVs
-% Each EMG field is a [n_channels x n_samples] matrix for that trial.
+% Each EMG field is a [n_samples x n_channels] matrix for that trial.
 % Channel names still come from participant's metadata.json.
 % Produces a grid of subplots
 
 clear; clc;
 
 %% Settings ──────────────────────────────────────────────────────────────
-MAT_PATH        = 'example.mat';
-STRUCT_VAR      = 'subset';            % name of the struct array inside the .mat file
-CH_META_PATH    = 'csv/P2_metadata.json';
+MAT_PATH        = 'P1_S2_EMG.mat';
+STRUCT_VAR      = 'miDB';            % name of the struct array inside the .mat file
+CH_META_PATH    = 'P1_metadata.json';
 
-SIGNAL          = 'EMG1k';             % which field to plot: 'EMG1k' | 'EMG1kf' | 'EMG30k' | 'EMG30kf'
+SIGNAL          = 'EMG1kf';             % which field to plot: 'EMG1k' | 'EMG1kf' | 'EMG30k' | 'EMG30kf'
 FS              = 1000;                % sampling rate (Hz) for the chosen SIGNAL (1000 for *1k, 30000 for *30k)
 
-TRIAL_ID        = 1;                   % which trial to plot (ignored when PLOT_MEAN = true)
+TRIAL_ID        = 6;                   % which trial to plot (ignored when PLOT_MEAN = true)
 MOVEMENT_NUMBER = 1;                   % movement to average (used when PLOT_MEAN = true)
 PLOT_MEAN       = false;               % false = single trial | true = mean across movement trials
 
@@ -43,7 +43,7 @@ trial_nums = [trials.TrialNumber]';
 trial_meta = table(trial_ids, move_nums, trial_nums, ...
     'VariableNames', {'TrialID','TaskNumber','TrialNumber'});
 
-n_ch = size(trials(1).(SIGNAL), 1);    % channels are rows: [n_channels x n_samples]
+n_ch = size(trials(1).(SIGNAL), 2);    % channels are columns: [n_samples x n_channels]
 
 if numel(ch_names) ~= n_ch
     warning('Channel metadata has %d names but data has %d channels — using generic labels.', ...
@@ -73,7 +73,7 @@ if PLOT_MEAN
     emg_mean  = mean(stack, 3);        % [n_channels x n_samples]
 
     plot_time = (0:n_samples-1)' / FS;
-    plot_data = emg_mean';             % transpose to [samples x channels] for plotting
+    plot_data = emg_mean;             
     fig_title = sprintf('Mean %s — Movement %d  (n=%d trials)', ...
         SIGNAL, MOVEMENT_NUMBER, n_trials);
 else
@@ -82,10 +82,10 @@ else
         error('TrialID %d not found.', TRIAL_ID);
     end
     tr        = trials(trial_idx);
-    n_samples = size(tr.(SIGNAL), 2);
+    n_samples = size(tr.(SIGNAL), 1);
 
     plot_time = (0:n_samples-1)' / FS;
-    plot_data = tr.(SIGNAL)';          % transpose to [samples x channels]
+    plot_data = tr.(SIGNAL);         
     fig_title = sprintf('%s — Trial %d  (Movement %d, Rep %d)', ...
         SIGNAL, TRIAL_ID, tr.TaskNumber, tr.TrialNumber);
 end

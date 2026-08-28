@@ -1,21 +1,23 @@
-function validationz = miRPNIvalidation(miDB, movements, moveset, win_ms)
+function validations = miRPNIvalidation(miDB, moveset, win_ms)
 
 if nargin < 4, win_ms = 50; end
+
 %this one uses stratified k-fold cross-validation instead cause the dataset
 %has pretty few samples to work with (at most 5 per movement)
 
-%generate list of tasknames from task numbers
+%generate list of tasknames from movements.json
+movements = string(struct2cell(jsondecode(fileread("movements.json")))'); %imports movement json as a struct, converts to cell array
 for i = 1:numel(miDB)
-    nomcondition = find(movements(:,2) == string(miDB(i).TaskNumber));
-    nomresult = movements(nomcondition,1);
+    nomcondition = find(movements(:,1) == string(miDB(i).TaskNumber));
+    nomresult = movements(nomcondition,2);
     miDB(i).TaskName = nomresult;
 end
 
 % get final counts for movements
 taskcats = categorical([miDB.TaskNumber]);
-validationz.taskcounts = countlabels(taskcats);
+validations.taskcounts = countlabels(taskcats);
 disp('total movements in data structure');
-disp(validationz.taskcounts)
+disp(validations.taskcounts)
 
 % what movement set do you want to test?
 % filter out data to only contain these movements:
@@ -33,7 +35,6 @@ g = ismember(string(taskNumbers), keymovements);
 miDB = miDB(g);
 
 %check to see if all unique moves are available. if not throw a flag for later analysis
-
 if length(unique([miDB.TaskNumber])) ~= length(keymovements)
     error('heads up -- not all key movements available in this datset')
 else
@@ -44,20 +45,19 @@ disp('movements available:')
 disp([miDB.TaskNumber])
 
 for i = 1:numel(miDB)
-% --- Cue timing (edit to match your protocol) ---
-    %we want to start about a second into the nominal movement time to
-    %ensure that actual movement movement is being done here. so, we'll add
-    %the equivalent of an extra second to account for that.
+    % we want to start about a second into the nominal movement time to
+    % ensure that actual movement movement is being done here. so, we'll add
+    % the equivalent of an extra second to account for that.
 
     cue_start_s = (miDB(i).RestTime + 1000)/1000; %for s 
     cue_end_s   = (miDB(i).RestTime + 2000)/1000; %for s 
     
-    % Convert to MAV window indices
+    % convert to MAV window indices
     cue_start_win = floor(cue_start_s / (win_ms/1000)) + 1;  % +1 for 1-based indexing
     cue_end_win   = floor(cue_end_s   / (win_ms/1000));
    
     
-    % Extract MAV only within the cue window
+    % extract MAV only within the cue window
     miDB(i).MAV_cue = miDB(i).MAVs(cue_start_win : cue_end_win,:);   % [n_cue_windows x 1]
     miDB(i).MAV_collapse = mean(miDB(i).MAV_cue,1); %averaging MAVs across channels for a single vector
    
@@ -136,15 +136,15 @@ for fold = 1:k
 end
 
 % Store the last fold's models for inspection if needed
-validationz.mdlTree = mdlTree;
-validationz.mdlKNN  = mdlKNN;
-validationz.mdlLDA  = mdlLDA;
+validations.mdlTree = mdlTree;
+validations.mdlKNN  = mdlKNN;
+validations.mdlLDA  = mdlLDA;
 
-validationz.X_train = X_train;  validationz.Y_train = Y_train;
-validationz.X_test  = X_test;   validationz.Y_test  = Y_test;
-validationz.predTree = predTree_all;
-validationz.predKNN  = predKNN_all;
-validationz.predLDA  = predLDA_all;
+validations.X_train = X_train;  validations.Y_train = Y_train;
+validations.X_test  = X_test;   validations.Y_test  = Y_test;
+validations.predTree = predTree_all;
+validations.predKNN  = predKNN_all;
+validations.predLDA  = predLDA_all;
 
 % =========================================================================
 % Step 5a: Accuracy across all folds
@@ -184,11 +184,11 @@ cmLDA = confusionchart(allTrue, predLDA_all, ...
 cmLDA.FontSize = 10;
 
 disp('Done!');
-validationz.accuracies = [accTree, accKNN, accLDA];
-validationz.modelNames = {'Decision Tree', 'k-NN', 'LDA'};
+validations.accuracies = [accTree, accKNN, accLDA];
+validations.modelNames = {'Decision Tree', 'k-NN', 'LDA'};
 disp('accuracies');
-disp(validationz.modelNames);
-disp(validationz.accuracies);
+disp(validations.modelNames);
+disp(validations.accuracies);
 disp('storing and exporting data');
 
 end

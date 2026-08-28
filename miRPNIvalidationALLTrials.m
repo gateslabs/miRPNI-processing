@@ -1,4 +1,4 @@
-function validationz = miRPNIvalidationALLTrials(matfiles, set, win_ms) % tt = miRPNIvalidationALLTrials(matFiles, movements, 1)
+function validationALL = miRPNIvalidationALLTrials(matfiles, set, win_ms) % tt = miRPNIvalidationALLTrials(matFiles, movements, 1)
 % inputs:
 % matfiles: a list of days to grab from, for example - 
 % matFiles    = {'P3_S1_EMG.mat', 'P3_S2_EMG.mat', 'P3_S3_EMG.mat',...
@@ -21,11 +21,11 @@ for fileIdx = 1:numel(matfiles)
     % Load the HDF5-based .mat (v7.3) file
     load(fname);
     
-
-    %generate list of tasknames from task numbers
+    % generate list of tasknames from the movements.json file
+    movements = string(struct2cell(jsondecode(fileread("movements.json")))'); %imports movement json as a struct, converts to cell array
     for i = 1:numel(miDB)
-        nomcondition = find(movements(:,2) == string(miDB(i).TaskNumber));
-        nomresult = movements(nomcondition,1);
+        nomcondition = find(movements(:,1) == string(miDB(i).TaskNumber));
+        nomresult = movements(nomcondition,2);
         miDB(i).TaskName = nomresult;
     end
 
@@ -123,7 +123,7 @@ disp('Step 3: Splitting data into train/test sets using randperm...');
 
 % Get the total number of rows
 numObservations = size(X, 1);
-validationz.numObservations = numObservations;
+validationALL.numObservations = numObservations;
 
 % Create a randomly shuffled list of indices
 shuffledIdx = randperm(numObservations);
@@ -144,10 +144,10 @@ Y_train = Y(trainIdx, :);
 X_test = X(testIdx, :);
 Y_test = Y(testIdx, :);
 
-validationz.X_train = X_train;
-validationz.Y_train = Y_train;
-validationz.X_test = X_test;
-validationz.Y_test = Y_test;
+validationALL.X_train = X_train;
+validationALL.Y_train = Y_train;
+validationALL.X_test = X_test;
+validationALL.Y_test = Y_test;
 
 %%
 % =========================================================================
@@ -169,9 +169,9 @@ mdlKNN = fitcknn(X_train, Y_train, 'NumNeighbors', 5);
 disp(' - Training LDA (fitcdiscr)...');
 mdlLDA = fitcdiscr(X_train, Y_train);
 
-validationz.mdlTree = mdlTree;
-validationz.mdlKNN = mdlKNN;
-validationz.mdlLDA = mdlLDA;
+validationALL.mdlTree = mdlTree;
+validationALL.mdlKNN = mdlKNN;
+validationALL.mdlLDA = mdlLDA;
 
 %%
 % =========================================================================
@@ -182,9 +182,9 @@ predTree = predict(mdlTree, X_test);
 predKNN  = predict(mdlKNN, X_test);
 predLDA  = predict(mdlLDA, X_test);
 
-validationz.predTree = predTree;
-validationz.predKNN = predKNN;
-validationz.predLDA = predLDA;
+validationALL.predTree = predTree;
+validationALL.predKNN = predKNN;
+validationALL.predLDA = predLDA;
 
 % 5a. Calculate overall percentage accuracy for each model
 disp(' - Calculating overall accuracy...');
@@ -241,11 +241,11 @@ cmLDA.FontSize = 10;
 
 disp('Done!');
 
-validationz.accuracies = [accTree, accKNN, accLDA];
-validationz.modelNames = {'Decision Tree', 'k-NN', 'LDA'};
+validationALL.accuracies = [accTree, accKNN, accLDA];
+validationALL.modelNames = {'Decision Tree', 'k-NN', 'LDA'};
 disp('accuracies');
-disp(validationz.modelNames)
-disp(validationz.accuracies)
+disp(validationALL.modelNames)
+disp(validationALL.accuracies)
 
 
 
