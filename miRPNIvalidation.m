@@ -1,12 +1,14 @@
-function validations = miRPNIvalidation(miDB, moveset, win_ms)
+function validations = miRPNIvalidation(miDB, moveset, json_filepath, win_ms)
 
 if nargin < 4, win_ms = 50; end
+
+
 
 %this one uses stratified k-fold cross-validation instead cause the dataset
 %has pretty few samples to work with (at most 5 per movement)
 
 %generate list of tasknames from movements.json
-movements = string(struct2cell(jsondecode(fileread("movements.json")))'); %imports movement json as a struct, converts to cell array
+movements = string(struct2cell(jsondecode(fileread(json_filepath)))'); %imports movement json as a struct, converts to cell array
 for i = 1:numel(miDB)
     nomcondition = find(movements(:,1) == string(miDB(i).TaskNumber));
     nomresult = movements(nomcondition,2);

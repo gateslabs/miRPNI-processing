@@ -1,4 +1,4 @@
-function validationALL = miRPNIvalidationALLTrials(matfiles, set, win_ms) % tt = miRPNIvalidationALLTrials(matFiles, movements, 1)
+function validationALL = miRPNIvalidationALLTrials(matfiles, set, json_filepath, win_ms) % tt = miRPNIvalidationALLTrials(matFiles, movements, 1)
 % inputs:
 % matfiles: a list of days to grab from, for example - 
 % matFiles    = {'P3_S1_EMG.mat', 'P3_S2_EMG.mat', 'P3_S3_EMG.mat',...
@@ -21,8 +21,8 @@ for fileIdx = 1:numel(matfiles)
     % Load the HDF5-based .mat (v7.3) file
     load(fname);
     
-    % generate list of tasknames from the movements.json file
-    movements = string(struct2cell(jsondecode(fileread("movements.json")))'); %imports movement json as a struct, converts to cell array
+    %generate list of tasknames from movements.json
+    movements = string(struct2cell(jsondecode(fileread(json_filepath)))'); %imports movement json as a struct, converts to cell array
     for i = 1:numel(miDB)
         nomcondition = find(movements(:,1) == string(miDB(i).TaskNumber));
         nomresult = movements(nomcondition,2);
