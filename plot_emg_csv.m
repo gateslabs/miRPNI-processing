@@ -6,9 +6,9 @@
 clear; clc;
 
 %% Settings ──────────────────────────────────────────────────────────────
-DATA_PATH      = "sample_set/P1_S1_EMG1kHz.csv";
-CH_META_PATH   = "sample_set/P1_metadata.json";
-TRIAL_META_PATH = "sample_set/P1_S1_meta.json";
+DATA_PATH      = "sample_set/csv/P1_S12_EMG1kHz.csv";
+CH_META_PATH   = "sample_set/meta/P1_metadata.json";
+TRIAL_META_PATH = "sample_set/meta/P1_S12_meta.json";
 
 FS             = 1000;   % sampling rate (Hz)
 TRIAL_ID       = 10;      % which trial to plot (ignored when PLOT_MEAN = true)

@@ -10,9 +10,9 @@
 clear; clc;
 
 %% Settings ──────────────────────────────────────────────────────────────
-MAT_PATH        = 'P1_S2_EMG.mat';
+MAT_PATH        = 'sample_set/mat/P1_S12_EMG.mat';
 STRUCT_VAR      = 'miDB';            % name of the struct array inside the .mat file
-CH_META_PATH    = 'P1_metadata.json';
+CH_META_PATH    = 'sample_set/meta/P1_metadata.json';
 
 SIGNAL          = 'EMG1kf';             % which field to plot: 'EMG1k' | 'EMG1kf' | 'EMG30k' | 'EMG30kf'
 FS              = 1000;                % sampling rate (Hz) for the chosen SIGNAL (1000 for *1k, 30000 for *30k)
