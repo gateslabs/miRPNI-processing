@@ -53,7 +53,7 @@ emg_col_names = T.Properties.VariableNames(startsWith( ...
 n_ch = numel(emg_col_names);
 
 % Add within-trial time
-trials_col = T.TrialID;
+trials_col = T.TrialID; 
 time_s     = zeros(height(T), 1);
 for tid = unique(trials_col)'
     mask = trials_col == tid;
