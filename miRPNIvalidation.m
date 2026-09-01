@@ -71,12 +71,14 @@ end
 disp('Step 2: Extracting and formatting data...');
 
 numTrials = length(miDB);
+
+%track which trial each window-row came from
 X = []; % Predictor matrix (Features)
 Y = {}; % Response cell array (Labels) - Changed to cell array
+trialID = [];   % trialID: one entry per window-row
 
 for i = 1:numTrials
-    % Extract the MAV features for this trial
-    %currentFeatures = miDB(i).MAVz; 
+    % Extract the MAV features for this trial 
     currentFeatures = miDB(i).MAV_cue;
 
     % Check if MAVs is empty or invalid
@@ -92,18 +94,19 @@ for i = 1:numTrials
     % Append to our master X and Y arrays
     X = [X; currentFeatures];
     Y = [Y; repmat(currentLabel, numSamples, 1)];
+    trialID = [trialID; repmat(i, numSamples, 1)];
 end
 
 disp(['Data formatted! Total samples: ', num2str(size(X,1)), ', Features: ', num2str(size(X,2))]);
 
 
-% =========================================================================
-% Step 3: Stratified K-Fold Cross-Validation (replaces randperm split)
-% =========================================================================
+% Step 3: Stratified K-Fold Cross-Validation (partitioning trials)
 disp('Step 3: Setting up stratified k-fold cross-validation...');
+rng('default');  % seed for reproducibility
 
 k = 4; % number of folds — reduce to 3 if dataset is very small
-cv = cvpartition(categorical(Y), 'KFold', k, 'Stratify', true);
+trialLabels = categorical(cellfun(@(t) char(t), {miDB.TaskName}, 'UniformOutput', false));
+cv = cvpartition(trialLabels, 'KFold', k, 'Stratify', true);
 
 % Preallocate accumulator arrays for predictions and ground truth
 allTrue  = {};
@@ -119,8 +122,12 @@ disp('Step 4/5: Training and predicting across folds...');
 for fold = 1:k
     fprintf(' - Fold %d of %d\n', fold, k);
 
-    trainIdx = training(cv, fold);
-    testIdx  = test(cv, fold);
+    trainTrials = find(training(cv, fold));
+    testTrials  = find(test(cv, fold));
+
+    trainIdx = ismember(trialID, trainTrials);
+    testIdx  = ismember(trialID, testTrials);
+
 
     X_train = X(trainIdx, :);  Y_train = Y(trainIdx, :);
     X_test  = X(testIdx,  :);  Y_test  = Y(testIdx,  :);

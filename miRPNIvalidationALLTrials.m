@@ -1,4 +1,4 @@
-function validationALL = miRPNIvalidationALLTrials(matfiles, set, json_filepath, win_ms) % tt = miRPNIvalidationALLTrials(matFiles, movements, 1)
+function validationALL = miRPNIvalidationALLTrials(matfiles, set, json_filepath, win_ms, seed) % tt = miRPNIvalidationALLTrials(matFiles, movements, 1, filepath)
 % inputs:
 % matfiles: a list of days to grab from, for example - 
 % matFiles    = {'P3_S1_EMG.mat', 'P3_S2_EMG.mat', 'P3_S3_EMG.mat',...
@@ -10,7 +10,10 @@ function validationALL = miRPNIvalidationALLTrials(matfiles, set, json_filepath,
 % 'P1_S7_EMG.mat','P1_S8_EMG.mat','P1_S9_EMG.mat', 'P1_S10_EMG.mat', 'P1_S11_EMG.mat', 'P1_S12_EMG.mat'};
 % set: run for either set 1 (rest, fist, pinch, point) or set 2 (rest, thumb, idx, middle)
 
-if nargin < 3, win_ms = 50; end
+if nargin < 4, win_ms = 50; end
+if nargin < 5, seed = 1; end
+rng(seed);
+
 largeDB = struct([]); %empty dataset to add to.
 
 %%
@@ -130,19 +133,19 @@ shuffledIdx = randperm(numObservations);
 
 % Define the split ratio (e.g., 80% training, 20% testing)
 trainRatio = 0.8;
-numTrain = round(trainRatio * numObservations);
+cv = cvpartition(categorical(Y), 'HoldOut', 1 - trainRatio, 'Stratify', true);
+
 
 
 % Assign indices to train and test sets
-trainIdx = shuffledIdx(1:numTrain);
-testIdx  = shuffledIdx(numTrain+1:end);
+trainIdx = training(cv);
+testIdx  = test(cv);
 
 % Create the final training and testing arrays
 X_train = X(trainIdx, :);
 Y_train = Y(trainIdx, :);
-
-X_test = X(testIdx, :);
-Y_test = Y(testIdx, :);
+X_test  = X(testIdx, :);
+Y_test  = Y(testIdx, :);
 
 validationALL.X_train = X_train;
 validationALL.Y_train = Y_train;
