@@ -136,3 +136,110 @@ Both flat files can be joined back to a session's metadata (`P#_S#_meta.json`) v
 ---
 
 ## Data intial processing code
+The following excerpts of MATLAB code illustrate important data processing steps taken before data validation. For code related to data validaiton and classification, visit the companion GitHub repository: [gateslabs/miRPNI-processing](https://github.com/gateslabs/miRPNI-processing).
+
+#### Filtering 30kHz data:
+  ```matlab
+numsamp = 30000; %starting out with 30k data
+
+%100-500 Hz bandpass filter
+[b(1,:), a(1,:)] = butter(2, [100, 500]/15e3, 'bandpass');
+
+%notch filter at 60Hz and harmonics
+[d(1,:), c(1,:)] = butter(2, [59, 61]/15e3, 'stop');
+[d(2,:), c(2,:)] = butter(2, [119, 121]/15e3, 'stop');
+[d(3,:), c(3,:)] = butter(2, [179, 181]/15e3, 'stop');
+[d(4,:), c(4,:)] = butter(2, [239, 241]/15e3, 'stop');
+[d(5,:), c(5,:)] = butter(2, [299, 301]/15e3, 'stop');
+[d(6,:), c(6,:)] = butter(2, [359, 361]/15e3, 'stop');
+[d(7,:), c(7,:)] = butter(2, [419, 421]/15e3, 'stop');
+[d(8,:), c(8,:)] = butter(2, [479, 481]/15e3, 'stop');
+
+disp('filtering 30k data')
+for i = 1:length(miDB)
+    disp(['filtering for task i = ', num2str(i)])
+    disp('bandpass: 100-500 hz')
+    miDB(i).EMG30kf = filter(b(1,:), a(1,:),  miDB(i).EMG30k);
+
+    disp('notch filter at 60 hz and harmonics')
+    for j = 1:8
+        miDB(i).EMG30kf = filter(d(j,:), c(j,:), miDB(i).EMG30kf);
+    end
+end
+  ```
+#### Downsampling 30kHz data:
+```matlab
+disp('downsampling 30k data')
+for i = 1:length(miDB)
+    disp(['downsampling for task i = ', num2str(i)])
+    % using resample to downsample the data to ensure antialiasing
+    miDB(i).EMG1kf = resample(miDB(i).EMG30kf, 1, 30); %downsampling down all channel columns
+    miDB(i).EMG1k = resample(miDB(i).EMG30k, 1, 30); %downsampling raw data, too
+end
+```
+#### Calculating MAVs from 30kHZ EMG data:
+```matlab
+for i = 1:numel(inDB)
+        emg_filt = inDB(i).EMG30kf; %grabbing 30k data: should be [numsamps x numchans]
+        n_windows = floor(size(emg_filt, 1) / win_samples);  % = 160 windows (default)
+        emg_trimmed = emg_filt(1 : n_windows * win_samples, :);
+        
+        numchans = size(emg_filt,2);
+        % Reshape and compute MAV: [n_windows x numchans]
+        emg_reshaped = reshape(emg_trimmed, win_samples, n_windows, numchans);  % [1500 x 160 x 8]
+        MAV = squeeze(mean(abs(emg_reshaped), 1));
+        
+        inDB(i).MAVs = MAV;
+
+        outDB = inDB;
+end
+```
+#### (Optional): calculating movement onset time based on MAVs
+```matlab
+for i = 1:length(inDB)
+      cue_start_s = inDB(i).RestTime/1000; %cue appears at {RestTime} s into the trial
+      cue_end_s   = (inDB(i).RestTime + inDB(i).HoldTime)/1000; %movement expected to be complete by          end of {HoldTime}
+    
+        % Convert to MAV window indices
+        cue_start_win = floor(cue_start_s / (win_ms/1000)) + 1;  % +1 for 1-based indexing
+        cue_end_win   = floor(cue_end_s   / (win_ms/1000));
+    
+        MAV = inDB(i).MAVs; %grabbing respective MAV matrix
+        MAV_sum = sum(MAV,2); %summing MAVs across channels for a single vector
+    
+        % Extract MAV only within the cue window
+        MAV_cue = MAV_sum(cue_start_win : cue_end_win, :);   % [n_cue_windows x 1]
+
+
+        % Baseline still comes from the pre-cue period
+        baseline_wins = cue_start_win - 1;   % all windows before the cue
+        baseline_MAV  = MAV_sum(1 : baseline_wins);
+
+        min_thresh = 2 * std(baseline_MAV);  % scaled to pre-cue noise floor
+    
+if isnan(min_thresh), min_thresh = 0; end %in case there is no rest time
+
+        % Change-point detection restricted to cue window
+        ipt_cue = findchangepts(MAV_cue, ...
+                  'Statistic',    'mean', ...
+                  'MinThreshold', min_thresh);
+
+        if ~isempty(ipt_cue)
+        % Map local index back to full-trial index
+        onset_window = cue_start_win + ipt_cue(1) - 1;
+        onset_time_s = (onset_window - 1) * (win_ms / 1000);
+        fprintf('Onset at window %d → %.3f s\n', onset_window, onset_time_s);
+        else
+        fprintf('No onset detected in cue window.\n');
+        onset_window = NaN;
+        onset_time_s = NaN;
+        end
+
+        inDB(i).onset_idx = onset_window;
+
+    end
+```
+
+
+
+
