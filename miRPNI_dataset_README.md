@@ -155,7 +155,7 @@ numsamp = 30000; %starting out with 30k data
 [d(7,:), c(7,:)] = butter(2, [419, 421]/15e3, 'stop');
 [d(8,:), c(8,:)] = butter(2, [479, 481]/15e3, 'stop');
 
-disp('filtering 30k data')
+disp('filtering 30 khz data')
 for i = 1:length(miDB)
     disp(['filtering for task i = ', num2str(i)])
     disp('bandpass: 100-500 hz')
@@ -167,7 +167,7 @@ for i = 1:length(miDB)
     end
 end
   ```
-#### Downsampling 30kHz data:
+#### Downsampling 30 kHz data:
 ```matlab
 disp('downsampling 30k data')
 for i = 1:length(miDB)
@@ -177,7 +177,7 @@ for i = 1:length(miDB)
     miDB(i).EMG1k = resample(miDB(i).EMG30k, 1, 30); %downsampling raw data, too
 end
 ```
-#### Calculating MAVs from 30kHZ EMG data:
+#### Calculating MAVs from 30 kHz EMG data:
 ```matlab
 for i = 1:numel(inDB)
         emg_filt = inDB(i).EMG30kf; %grabbing 30k data: should be [numsamps x numchans]
