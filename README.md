@@ -88,7 +88,7 @@ miRPNI-processing/
 
 File naming follows `P<participant>_S<session>_...`, so a different sample file will simply have a different `P#_S#` prefix — update the path constants at the top of each script/notebook accordingly (see below).
 
-If the sample data ships as a zip (e.g. `sample_set.zip`), just unzip it at the repo root so it produces the `sample_set/` folder shown above.
+The sample data ships as a zip (e.g. `sample_set.zip`). Unzip it at the repo root so it produces the `sample_set/` folder shown above.
 
 ---
 
@@ -170,7 +170,6 @@ These two scripts train simple decoders (decision tree, k-NN, LDA) on MAV featur
 - **Array orientation**: MATLAB v7.3 (`.mat`) files loaded via `mat73`/`scipy.io` can come back transposed depending on how they were saved. Always check the printed shape in the sanity-check cell of `mat_to_dataframe.ipynb` before trusting downstream results, and flip `TRANSPOSE` if needed.
 - **Paths are hardcoded for the sample data**: every script/notebook has its file paths set as plain constants near the top (`MAT_PATH`, `CSV_PATH`, `DATA_PATH`, etc.), pointing at `sample_set/...` by default. Update them to point at wherever your copy of the real dataset lives — there's no config file or CLI args.
 - **`movements.json` is shared**: it's the one metadata file that isn't per-session — it maps `TaskNumber` → `TaskName` for the whole dataset.
-- Sample/derived data folders (`sample_set/`, any `csv/` export folder, `*.mat` files, `sample_set.zip`, `dataset_code.zip`) are git-ignored — don't expect them in a fresh clone; you need to add them yourself as described above.
 
 ---
 
