@@ -1,5 +1,3 @@
-# miRPNI Dataset
-
 **A dataset of intramuscular electromyography from Regenerative Peripheral Nerve Interfaces (RPNIs) and residual muscles**
 
 Date: 2026-09-02
@@ -10,8 +8,10 @@ DOI: https://doi.org/10.5281/ZENODO.21268334
 ---
 
 ## Dataset contacts
-Chinwendu Nwokeabia [cnwoke@umich.edu],
-Cynthia Chestek [cchestek@umich.edu], 
+Chinwendu Nwokeabia [cnwoke@umich.edu]
+
+Cynthia Chestek [cchestek@umich.edu]
+
 Deanna Gates [gatesd@umich.edu]
 
 ## Funding
@@ -57,7 +57,7 @@ Data were originally sampled at 30 kHz but downsampled to 1 kHz for most session
 - Sessions 7, 8, 9 for P1 and P2
 - Sessions 10, 11, 12 for P3 and P4
 
-Each `.mat` file can be paired with the corresponding session's per-trial metadata file (`P#_S#_meta.json`) via the shared `TrialID` field, and with the participant's channel metadata (`P#_metadata.json`). A single `movements.json` file (shared across the whole dataset) maps `TaskNumber` → movement name.
+Each `.mat` file can be paired with the corresponding session's per-trial metadata file (`P#_S#_meta.json`) via the shared `TrialID` field, and with the participant's channel metadata (`P#_metadata.json`). A single `movements.json` file (shared across the whole dataset) maps `TaskNumber` to movement name.
 
 ---
 
@@ -75,7 +75,6 @@ Each `.mat` file contains a single struct variable named **`miDB`**, with one el
 | `RestTime` | Time in the trial (ms) before movement was cued. |
 | `HoldTime` | Time in the trial (ms) during which movement was cued/expected. |
 
-> **Note for maintainers:** the original source listed this field as `trialID`; standardized here to `TrialID` to match the field name used throughout the code repo.
 
 ### Raw signal fields
 
@@ -100,10 +99,6 @@ All EMG-related fields (`EMG30k(f)`, `EMG1k(f)`, `MAVs`) are matrices where each
 
 A string array, `movements`, lists the names and corresponding codes (`TaskNumber`) for every movement available across the dataset. This is also provided as `movements.json`.
 
-### Derived onset field (optional / methods-only)
-
-Movement onset within a trial can be estimated by applying change-point detection to the summed MAV signal within the cued window, using a baseline noise threshold from the pre-cue period. Where this has been computed, it is stored as an `onset_idx` field (the MAV window index of detected onset). See [1] for the full methodology; this is a derived/analysis field rather than a field guaranteed to be present in every release of the raw data.
-
 ---
 
 ## Channel maps
@@ -123,7 +118,7 @@ EMG channel names for each participant are listed, in channel order, in that par
 
 ## Companion flat-file exports
 
-In addition to the `.mat` files, the `miDB` structs have been exported as flat files for use outside MATLAB:
+In addition to the `.mat` files, the `miDB` structs have been exported as flat, comma separated files for use outside MATLAB:
 
 - **`P#_S#_MAVs.csv`** — MAVs for all channels across every available trial, including a `WindowStartTime` column (seconds) denoting the start of each 50 ms window.
 - **`P#_S#_EMG1kHz.csv`** — the 1 kHz EMG data for all channels across every available trial, including a `MovementCue` logical column derived from `RestTime`/`HoldTime`.
@@ -139,3 +134,5 @@ Both flat files can be joined back to a session's metadata (`P#_S#_meta.json`) v
 [2] Nwokeabia, C. et al. (2026). miRPNI: A dataset of intramuscular electromyography from Regenerative Peripheral Nerve Interfaces and residual muscles. Zenodo. https://doi.org/10.5281/ZENODO.21268334
 
 ---
+
+## Data intial processing code
