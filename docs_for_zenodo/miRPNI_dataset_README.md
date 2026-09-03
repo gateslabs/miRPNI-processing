@@ -239,7 +239,53 @@ if isnan(min_thresh), min_thresh = 0; end %in case there is no rest time
 
     end
 ```
+#### Generate json files for session metadata using miDB fields
+```matlab
+% export metadata for user sessions
+for session = 1:numSessions
+    disp('loading emg data')
+    load(strcat(savepath, "\mat\", pID, "_S", num2str(session), "_EMG.mat"))
 
+    json_session = strcat(savepath, "\meta\", pID, "_S", num2str(session), "_meta.json");
+
+    for i = 1:numel(miDB)
+        j(i).TrialID = miDB(i).TrialID;
+        j(i).TaskNumber = miDB(i).TaskNumber;
+        j(i).TrialNumber = miDB(i).TrialNumber;
+        j(i).RestTime = miDB(i).RestTime;
+        j(i).HoldTime = miDB(i).HoldTime;
+
+    end
+
+    out = jsonencode(j, "PrettyPrint",true);
+
+    disp('saving json')
+    fid = fopen(json_session,'w');
+    fprintf(fid,'%s',out);
+    fclose(fid);
+end
+```
+
+#### Convert and save miDB MATLAB structs as csv files
+This code uses the custom script **`miDB2csv.m`**, which is available in this data repo.
+```matlab
+%% convert and save miDB as csv files: 1k, 1kf, mavs:(miDB2csv.m)
+for session = 1:numSessions
+    fprintf('session %d \n', session);
+    disp('loading emg data')
+    load(strcat(savepath, "\mat\", pID, "_S", num2str(session), "_EMG.mat"))
+    idxx = size(miDB(1).EMG1k, 2);
+
+    [MAVs, Data1k, Data1kf, D30, D30f] = miDB2csv(miDB, idxx);
+
+    mavfp = strcat(savepath, "\csv\",pID, "_S", num2str(session), '_MAVS.csv'); 
+    EMG1kfp = strcat(savepath, "\csv\",pID, "_S", num2str(session), '_EMG1kHz.csv');
+   
+    writematrix(MAVs,mavfp, 'Delimiter', 'comma'); 
+    writematrix(Data1k,EMG1kfp, 'Delimiter', 'comma'); 
+
+end
+```
 
 
 
