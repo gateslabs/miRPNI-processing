@@ -2,9 +2,7 @@ function validations = miRPNIvalidation(miDB, moveset, json_filepath, win_ms)
 
 if nargin < 4, win_ms = 50; end
 
-
-
-%this one uses stratified k-fold cross-validation instead cause the dataset
+%this function uses stratified k-fold cross-validation instead cause the dataset
 %has pretty few samples to work with (at most 5 per movement)
 
 %generate list of tasknames from movements.json
@@ -26,7 +24,7 @@ disp(validations.taskcounts)
 if moveset == 1
     keymovements = ['1', '7', '8', '9']'; % rest, fist, pinch, point
 elseif moveset == 2
-    keymovements = ['1', '2', '3', '4']'; %running this model because there are some seesssions that dont have grasps above
+    keymovements = ['1', '2', '3', '4']'; %rest, index, middle, ring flex
 else
     disp('choose a set');
 end
@@ -65,14 +63,13 @@ for i = 1:numel(miDB)
    
 end
 
-% =========================================================================
-% Step 2: Format Data for fitc* commands (Revised for compatibility)
-% =========================================================================
-disp('Step 2: Extracting and formatting data...');
+
+% Format Data for fitc* commands (Revised for compatibility)
+disp('Extracting and formatting data...');
 
 numTrials = length(miDB);
 
-%track which trial each window-row came from
+% track which trial each window-row came from
 X = []; % Predictor matrix (Features)
 Y = {}; % Response cell array (Labels) - Changed to cell array
 trialID = [];   % trialID: one entry per window-row
@@ -100,7 +97,7 @@ end
 disp(['Data formatted! Total samples: ', num2str(size(X,1)), ', Features: ', num2str(size(X,2))]);
 
 
-% Step 3: Stratified K-Fold Cross-Validation (partitioning trials)
+% Stratified K-Fold Cross-Validation (partitioning trials)
 disp('Step 3: Setting up stratified k-fold cross-validation...');
 rng('default');  % seed for reproducibility
 
@@ -114,10 +111,9 @@ predTree_all = {};
 predKNN_all  = {};
 predLDA_all  = {};
 
-% =========================================================================
-% Steps 4 & 5: Train and Predict across each fold
-% =========================================================================
-disp('Step 4/5: Training and predicting across folds...');
+
+% Train and Predict across each fold
+disp('Training and predicting across folds...');
 
 for fold = 1:k
     fprintf(' - Fold %d of %d\n', fold, k);
@@ -155,17 +151,14 @@ validations.predTree = predTree_all;
 validations.predKNN  = predKNN_all;
 validations.predLDA  = predLDA_all;
 
-% =========================================================================
-% Step 5a: Accuracy across all folds
-% =========================================================================
+% Accuracy across all folds
+
 accTree = round(sum(cellfun(@strcmp, allTrue, predTree_all)) / numel(allTrue) * 100, 2);
 accKNN  = round(sum(cellfun(@strcmp, allTrue, predKNN_all))  / numel(allTrue) * 100, 2);
 accLDA  = round(sum(cellfun(@strcmp, allTrue, predLDA_all))  / numel(allTrue) * 100, 2);
 
-% =========================================================================
-% Step 6: Confusion Matrices (unchanged, just uses allTrue now)
-% =========================================================================
-disp('Step 6: Generating Confusion Matrices...');
+% Confusion Matrices
+disp('Generating Confusion Matrices...');
 
 mainFig = figure('WindowState', 'maximized', 'Name', 'Multi-Model Performance Comparison', 'NumberTitle', 'off');
 tl = tiledlayout(mainFig, 1, 3);

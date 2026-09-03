@@ -1,4 +1,4 @@
-function validationALL = miRPNIvalidationALLTrials(matfiles, set, json_filepath, win_ms, seed) % tt = miRPNIvalidationALLTrials(matFiles, movements, 1, filepath)
+function validationALL = miRPNIvalidationALLTrials(matfiles, set, json_filepath, win_ms, seed) 
 % inputs:
 % matfiles: a list of days to grab from, for example - 
 % matFiles    = {'P3_S1_EMG.mat', 'P3_S2_EMG.mat', 'P3_S3_EMG.mat',...
@@ -44,7 +44,7 @@ for fileIdx = 1:numel(matfiles)
     if set == 1
         keymovements = ['1', '7', '8', '9']'; % rest, fist, pinch, point
     elseif set == 2
-        keymovements = ['1', '2', '3', '4']'; %running this model because there are some seesssions that dont have grasps above
+        keymovements = ['1', '2', '3', '4']'; %rest, index, middle, ring flex
     else
         disp('choose a set');
     end
@@ -56,7 +56,7 @@ for fileIdx = 1:numel(matfiles)
 
     % grab only the MAVs relevant to movement (not based on movement onset atm)
     for i = 1:numel(miDB)
-% --- Cue timing (edit to match your protocol) ---
+    % --- cue timing---
     %we want to start about a second into the nominal movement time to
     %ensure that actual movement movement is being done here. so, we'll add
     %the equivalent of an extra second to account for that.
@@ -81,15 +81,10 @@ for fileIdx = 1:numel(matfiles)
     %append to larger matrix
     largeDB = [largeDB,miDB];
 end
-    
-%
 
-%%
+% Format Data for fitc* commands
 
-% =========================================================================
-% Step 2: Format Data for fitc* commands (Revised for compatibility)
-% =========================================================================
-disp('Step 2: Extracting and formatting data...');
+disp('Extracting and formatting data...');
 
 numTrials = length(largeDB);
 X = []; % Predictor matrix (Features)
@@ -116,13 +111,10 @@ for i = 1:numTrials
 end
 
 disp(['Data formatted! Total samples: ', num2str(size(X,1)), ', Features: ', num2str(size(X,2))]);
-% We skip the categorical conversion entirely now!
 
-%%
-% =========================================================================
-% Step 3: Split Data into Training and Testing Sets (Manual Split)
-% =========================================================================
-disp('Step 3: Splitting data into train/test sets using randperm...');
+
+% Split Data into Training and Testing Sets (Manual Split)
+disp('Splitting data into train/test sets using randperm...');
 
 % Get the total number of rows
 numObservations = size(X, 1);
@@ -134,8 +126,6 @@ shuffledIdx = randperm(numObservations);
 % Define the split ratio (e.g., 80% training, 20% testing)
 trainRatio = 0.8;
 cv = cvpartition(categorical(Y), 'HoldOut', 1 - trainRatio, 'Stratify', true);
-
-
 
 % Assign indices to train and test sets
 trainIdx = training(cv);
@@ -152,11 +142,8 @@ validationALL.Y_train = Y_train;
 validationALL.X_test = X_test;
 validationALL.Y_test = Y_test;
 
-%%
-% =========================================================================
-% Step 4: Train Classifiers
-% =========================================================================
-disp('Step 4: Training Classifiers...');
+% Train Classifiers
+disp('Training Classifiers...');
 
 % 1. Decision Tree
 disp(' - Training Decision Tree (fitctree)...');
@@ -176,11 +163,8 @@ validationALL.mdlTree = mdlTree;
 validationALL.mdlKNN = mdlKNN;
 validationALL.mdlLDA = mdlLDA;
 
-%%
-% =========================================================================
-% Step 5: Make Predictions
-% =========================================================================
-disp('Step 5: Making predictions on test data...');
+% Make Predictions
+disp('Making predictions on test data...');
 predTree = predict(mdlTree, X_test);
 predKNN  = predict(mdlKNN, X_test);
 predLDA  = predict(mdlLDA, X_test);
@@ -189,18 +173,14 @@ validationALL.predTree = predTree;
 validationALL.predKNN = predKNN;
 validationALL.predLDA = predLDA;
 
-% 5a. Calculate overall percentage accuracy for each model
-disp(' - Calculating overall accuracy...');
+% Calculate overall percentage accuracy for each model
+disp('Calculating overall accuracy...');
 accTree = round(sum(cellfun(@strcmp, Y_test, predTree)) / length(Y_test) * 100, 2);
 accKNN  = round(sum(cellfun(@strcmp, Y_test, predKNN)) / length(Y_test) * 100, 2);
 accLDA  = round(sum(cellfun(@strcmp, Y_test, predLDA)) / length(Y_test) * 100, 2);
 
-
-%%
-% =========================================================================
-% Step 6: Visualize Results (Confusion Matrices)
-% =========================================================================
-disp('Step 6: Generating Confusion Matrices...');
+% Visualize Results (Confusion Matrices)
+disp('Generating Confusion Matrices...');
 
 % 5b. Create a new, multi-panel figure
 mainFig = figure('WindowState', 'maximized', 'Name', 'Multi-Model Performance Comparison', 'NumberTitle', 'off');
