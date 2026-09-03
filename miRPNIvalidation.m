@@ -1,6 +1,6 @@
 function validations = miRPNIvalidation(miDB, moveset, win_ms)
 
-if nargin < 4, win_ms = 50; end
+if nargin < 3, win_ms = 50; end
 
 %this one uses stratified k-fold cross-validation instead cause the dataset
 %has pretty few samples to work with (at most 5 per movement)
