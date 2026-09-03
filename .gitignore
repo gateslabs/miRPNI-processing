@@ -3,3 +3,9 @@
 /csv
 *.mat
 /sample_set
+<<<<<<< Updated upstream
+=======
+sample_set.zip
+dataset_code.zip
+README(1).md
+>>>>>>> Stashed changes
