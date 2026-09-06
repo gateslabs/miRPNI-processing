@@ -194,51 +194,6 @@ for i = 1:numel(inDB)
         outDB = inDB;
 end
 ```
-#### (Optional): calculating movement onset time based on MAVs
-```matlab
-for i = 1:length(inDB)
-      cue_start_s = inDB(i).RestTime/1000; %cue appears at {RestTime} s into the trial
-      cue_end_s   = (inDB(i).RestTime + inDB(i).HoldTime)/1000; %movement expected to be complete by          end of {HoldTime}
-    
-        % Convert to MAV window indices
-        cue_start_win = floor(cue_start_s / (win_ms/1000)) + 1;  % +1 for 1-based indexing
-        cue_end_win   = floor(cue_end_s   / (win_ms/1000));
-    
-        MAV = inDB(i).MAVs; %grabbing respective MAV matrix
-        MAV_sum = sum(MAV,2); %summing MAVs across channels for a single vector
-    
-        % Extract MAV only within the cue window
-        MAV_cue = MAV_sum(cue_start_win : cue_end_win, :);   % [n_cue_windows x 1]
-
-
-        % Baseline still comes from the pre-cue period
-        baseline_wins = cue_start_win - 1;   % all windows before the cue
-        baseline_MAV  = MAV_sum(1 : baseline_wins);
-
-        min_thresh = 2 * std(baseline_MAV);  % scaled to pre-cue noise floor
-    
-if isnan(min_thresh), min_thresh = 0; end %in case there is no rest time
-
-        % Change-point detection restricted to cue window
-        ipt_cue = findchangepts(MAV_cue, ...
-                  'Statistic',    'mean', ...
-                  'MinThreshold', min_thresh);
-
-        if ~isempty(ipt_cue)
-        % Map local index back to full-trial index
-        onset_window = cue_start_win + ipt_cue(1) - 1;
-        onset_time_s = (onset_window - 1) * (win_ms / 1000);
-        fprintf('Onset at window %d → %.3f s\n', onset_window, onset_time_s);
-        else
-        fprintf('No onset detected in cue window.\n');
-        onset_window = NaN;
-        onset_time_s = NaN;
-        end
-
-        inDB(i).onset_idx = onset_window;
-
-    end
-```
 #### Generate json files for session metadata using miDB fields
 ```matlab
 % export metadata for user sessions

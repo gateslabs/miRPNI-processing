@@ -1,4 +1,4 @@
-% Plots all EMG channels from a given session using a .txt file
+% Plots all EMG channels from a given session using a .csv file
 % Uses channel names from participant's metadata.json and trial info from
 % the corresponding metadata file.
 % Produces a grid of subplots
