@@ -92,9 +92,9 @@ The sample data ships as a zip (e.g. `sample_set.zip`). Unzip it at the repo roo
 
 ---
 
-## Data model
+## Data content
 
-Both loading pipelines (`.mat` and `.csv`) converge on the same shape: **one row per trial**, with the following fields:
+Both `.mat` and `.csv` loading pipelines converge on the same shape: **one row per trial**, with the following fields:
 
 | Field | Meaning |
 |---|---|
@@ -103,9 +103,9 @@ Both loading pipelines (`.mat` and `.csv`) converge on the same shape: **one row
 | `TaskName` | Human-readable movement name, e.g. "rest", "fist", "pinch", "point" |
 | `TrialNumber` | Repetition number of that movement within the session |
 | `RestTime` / `HoldTime` | Timing (ms) of the rest and hold/movement periods within the trial |
-| `EMG1k` | `(numSamples × numChannels)` array — 1 kHz EMG for the trial |
-| `EMG1kf` | Filtered version of `EMG1k` |
-| `EMG30k` / `EMG30kf` | Raw/filtered 30 kHz EMG (present in the `.mat` files; dropped by `miRPNIvalidationALLTrials.m` before concatenating sessions) |
+| `EMG1k` | `(numSamples × numChannels)` array — 1 kHz EMG for the trial. This field is present in both `.mat` and `.csv` files.|
+| `EMG1kf` | Filtered version of `EMG1k`. This field is present in both `.mat` and `.csv` files. |
+| `EMG30k` / `EMG30kf` | Raw/filtered 30 kHz EMG (**present in the `.mat` files only**; dropped by `miRPNIvalidationALLTrials.m` before concatenating sessions) |
 | `MAVs` | Mean absolute value features per time window (used by the validation scripts) |
 
 Channel names (e.g. `FDPI`, `FCR`, `Ulnar RPNI`, `Median RPNI`, `EDC`, `EPL`, `FDPS`, `FPL`) come from the participant's `P#_metadata.json`, ordered by `channelNumber` — they are **not** stored in the `.mat`/`.csv` data itself.
