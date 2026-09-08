@@ -16,7 +16,6 @@ This repo is a set of starter notebooks and MATLAB scripts meant to get miRPNI u
 |---|---|---|
 | `mirpni.yaml` | conda | Environment spec with all Python dependencies |
 | `mirpni_utils.py` | Python | Shared loading helpers (`.mat` reading, channel-name lookup, CSV reshape) used by more than one notebook -- see [Notes](#notes--gotchas) |
-
 | `mat_to_dataframe.ipynb` | Python | Loads a `.mat` session file into a tidy per-trial `pandas` DataFrame |
 | `csv_to_dataframe.ipynb` | Python | Loads a `.csv` + metadata-JSON session export into the same per-trial DataFrame shape |
 | `plot_emg.ipynb` | Python | Plots a single trial (or the mean across trials for a task) using the CSV pipeline |
