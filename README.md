@@ -16,7 +16,7 @@ This repo is a set of starter notebooks and MATLAB scripts meant to get miRPNI u
 |---|---|---|
 | `mirpni.yaml` | conda | Environment spec with all Python dependencies |
 | `mirpni_utils.py` | Python | Shared loading helpers (`.mat` reading, channel-name lookup, CSV reshape) used by more than one notebook -- see [Notes / gotchas](#notes--gotchas) |
-| `load_channel_map.m` | MATLAB | Shared channel-name lookup used by both `.m` plotting scripts |
+
 | `mat_to_dataframe.ipynb` | Python | Loads a `.mat` session file into a tidy per-trial `pandas` DataFrame |
 | `csv_to_dataframe.ipynb` | Python | Loads a `.csv` + metadata-JSON session export into the same per-trial DataFrame shape |
 | `plot_emg.ipynb` | Python | Plots a single trial (or the mean across trials for a task) using the CSV pipeline |
@@ -145,13 +145,13 @@ Run all cells; the final cell renders the figure inline.
 ### Plotting
 
 - `plot_emg_csv.m` — edit `DATA_PATH`, `CH_META_PATH`, `TRIAL_META_PATH` at the top to point at your sample files, set `TRIAL_ID`/`TASK_NUMBER`/`PLOT_MEAN`, then run the script. It produces a stacked grid of subplots, one per channel.
-- `plot_emg_mat.m` — same idea, but reads straight from the session `.mat` file (`MAT_PATH`, expects a struct array named `miDB` by default — change `STRUCT_VAR` if your file uses a different variable name). You can also choose which signal to plot via `SIGNAL` (`'EMG1k'`, `'EMG1kf'`, `'EMG30k'`, or `'EMG30kf'`) and set `FS` to match (1000 Hz for the `*1k*` signals, 30000 Hz for `*30k*`).
+- `plot_emg_mat.m` — same idea, but reads straight from the session `.mat` file (`MAT_PATH`, expects a struct array named `miDB` by default. Change `STRUCT_VAR` if your file uses a different variable name). You can also choose which signal to plot via `SIGNAL` (`'EMG1k'`, `'EMG1kf'`, `'EMG30k'`, or `'EMG30kf'`) and set `FS` to match (1000 Hz for the `*1k*` signals, 30000 Hz for `*30k*`).
 
 Both scripts have a commented-out `exportgraphics(...)` line at the bottom if you want to save the figure as a PNG instead of just viewing it.
 
 ### Movement classification
 
-These two scripts train simple decoders (decision tree, k-NN, LDA) on MAV features to classify movement from EMG, using stratified k-fold cross-validation (the dataset has few trials per movement, so plain train/test splits aren't reliable).
+These two scripts train simple decoders (decision tree, k-NN, LDA) on MAV features to classify movement from EMG.
 
 - **`miRPNIvalidation.m`** — single session.
   ```matlab
@@ -174,9 +174,9 @@ These two scripts train simple decoders (decision tree, k-NN, LDA) on MAV featur
 ## Notes
 
 - **Array orientation**: MATLAB v7.3 (`.mat`) files loaded via `mat73`/`scipy.io` can come back transposed depending on how they were saved. Always check the printed shape in the sanity-check cell of `mat_to_dataframe.ipynb` before trusting downstream results, and flip `TRANSPOSE` if needed.
-- **Paths are hardcoded for the sample data**: every script/notebook has its file paths set as plain constants near the top (`MAT_PATH`, `CSV_PATH`, `DATA_PATH`, etc.), pointing at `sample_set/...` by default. Update them to point at wherever your copy of the real dataset lives — there's no config file or CLI args.
-- **`movements.json` is shared**: it's the one metadata file that isn't per-session — it maps `TaskNumber` → `TaskName` for the whole dataset.
-- **Shared code lives in `mirpni_utils.py` / `load_channel_map.m`**: `mat_to_dataframe.ipynb`, `csv_to_dataframe.ipynb`, and `plot_emg.ipynb` all import loading/channel-lookup helpers from `mirpni_utils.py` rather than each reimplementing them -- if you're adapting one of these notebooks and something looks missing, check there before assuming it's inline. The `.m` plotting scripts do the same via `load_channel_map.m`.
+- **Paths are hardcoded for the sample data**: every script/notebook has its file paths set as plain constants near the top (`MAT_PATH`, `CSV_PATH`, `DATA_PATH`, etc.), pointing at `sample_set/...` by default. Update them to point at wherever your copy of the real dataset lives.
+- **`movements.json` is shared**: it maps `TaskNumber` → `TaskName` for the whole dataset.
++ **Shared code lives in `mirpni_utils.py`**: `mat_to_dataframe.ipynb`, `csv_to_dataframe.ipynb`, and `plot_emg.ipynb` all import loading/channel-lookup helpers from `mirpni_utils.py` rather than each reimplementing them. If you're adapting one of these notebooks and something looks missing, check there before assuming it's inline. The `.m` plotting scripts (`plot_emg_mat.m`, `plot_emg_csv.m`) each do their own channel-name lookup inline instead, since MATLAB doesn't have an equivalent shared-import pattern for this repo's script-based (non-package) layout.
 
 ## Next steps
 
