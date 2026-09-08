@@ -6,7 +6,7 @@ This repo is a set of starter notebooks and MATLAB scripts meant to get miRPNI u
 
 > A small sample dataset (`sample_set/`) will be added to this repo separately. This README assumes you have that sample data — see [Getting the sample data](#getting-the-sample-data) below for the exact folder layout the scripts expect.
 
-[1] Nwokeabia, C. et al. *miRPNI: A dataset of intramuscular electromyography from Regenerative Peripheral Nerve Interfaces and residual muscles.* Zenodo (2026). https://doi.org/10.5281/ZENODO.21268334
+[1] Nwokeabia, C. et al. *miRPNI: A dataset of intramuscular electromyography from Regenerative Peripheral Nerve Interfaces and residual muscles.* Zenodo (2026). https://doi.org/10.5281/zenodo.20739025
 
 ---
 
