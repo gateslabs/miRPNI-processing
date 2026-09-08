@@ -72,7 +72,7 @@ No MATLAB package manager setup is needed — just open the `.m` files in MATLAB
 
 ## Getting the sample data
 
-The scripts expect a `sample_set/` folder at the repo root (it's git-ignored, so you add it locally — it isn't tracked in this repo). Once the sample dataset is published alongside this repo, download/unzip it so the layout looks like this:
+The scripts expect a `sample_set/` folder at the repo root that you must add locally. Unzip the folder so the layout looks like this:
 The sample set can be downloaded [here](https://drive.google.com/file/d/1fk9SZDi1smsUZruQOwkjHa4kWBSfk8yp/view?usp=sharing). 
 ```
 miRPNI-processing/
@@ -119,7 +119,7 @@ Channel names (e.g. `FDPI`, `FCR`, `Ulnar RPNI`, `Median RPNI`, `EDC`, `EPL`, `F
 
 ## Quickstart: Python notebooks
 
-Pick one of the two loading pipelines depending on which sample file(s) you have (`.mat` or `.csv`) — both produce an equivalent `trial_meta` DataFrame.
+Pick one of the two loading pipelines depending on which sample file(s) you have (`.mat` or `.csv`).
 
 ### 1. Build a per-trial DataFrame
 

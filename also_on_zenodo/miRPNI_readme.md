@@ -1,7 +1,6 @@
 **A dataset of intramuscular electromyography from Regenerative Peripheral Nerve Interfaces (RPNIs) and residual muscles**
 
 Date: 2026-09-02
-DOI: https://doi.org/10.5281/ZENODO.21268334
 
 > This document describes the **data** only. For code to load, plot, and classify this data, see the companion GitHub repository: [gateslabs/miRPNI-processing](https://github.com/gateslabs/miRPNI-processing). That repo's own README covers environment setup and usage.
 
@@ -49,10 +48,14 @@ There are up to twelve evenly spaced sessions per participant (42 files total). 
 ```
 <ParticipantID>_<SessionNumber>_EMG.mat
 ```
+or 
+```
+<ParticipantID>_<SessionNumber>_<DataCategory>.csv
+```
 
-For example, Participant 1's data for session 8 is `P1_S8_EMG.mat`.
+For example, Participant 1's data for session 8 is `P1_S8_EMG.mat`. Participant 2's MAVs for session 12 are availale in `P2_S12_MAVS.csv`.
 
-Data were originally sampled at 30 kHz but downsampled to 1 kHz for most sessions to save space. The 30 kHz data is retained for each participant's last three available sessions:
+Data were originally sampled at 30 kHz but downsampled to 1 kHz for most sessions to save space. The 30 kHz data is retained for each participant's last three available sessions in their respective `.mat` files:
 
 - Sessions 7, 8, 9 for P1 and P2
 - Sessions 10, 11, 12 for P3 and P4
@@ -62,26 +65,28 @@ Each `.mat` file can be paired with the corresponding session's per-trial metada
 ---
 
 ## Data structure
+### Complete EMG data exports (`.mat`)
+EMG data (raw and filtered) is available in 1000 Hz via `.csv` files, while raw and filtered data at 1000 Hz and 30000 Hz is available in `.mat` files.
 
-Each `.mat` file contains a single struct variable named **`miDB`**, with one element per trial.
+ Each `.mat` file contains a single struct variable named **`miDB`**, with one element per trial.
 
 ### Trial-level fields
 
 | Field name | Description |
 |---|---|
 | `TrialID` | Identification number for an individual trial in a recording session. Used to map EMG data to metadata in the session's corresponding metadata files. |
-| `TaskNumber` | Code for the specific movement completed during a given trial. The corresponding movement name is listed in `movements.json`. |
-| `TrialNumber` | Repetition number for the movement completed during a given trial. |
-| `RestTime` | Time in the trial (ms) before movement was cued. |
-| `HoldTime` | Time in the trial (ms) during which movement was cued/expected. |
+| `TaskNumber` | Code for the specific movement (individual finger movement, wrist movment, or functional grasp) completed during a given trial. The corresponding movement name is listed in `movements.json`. |
+| `TrialNumber` | Repetition number for the hand gesture completed during a given trial (i.e. 1-5).|
+| `RestTime` | Time in the trial (ms) where no movement was cued. |
+| `HoldTime` | Time in the trial (ms) where the movement was cued/expected. |
 
 
 ### Raw signal fields
 
 | Field name | Description |
 |---|---|
-| `EMG30k` | Raw imEMG sampled at 30,000 Hz. Present only for each participant's last three sessions (see above). |
-| `EMG1k` | Raw imEMG downsampled to 1,000 Hz. |
+| `EMG30k` | Raw imEMG sampled at 30,000 Hz. Present only for each participant's last three sessions and only in `.mat` form (see above). |
+| `EMG1k` |imEMG downsampled to 1,000 Hz using the `resample` function in MATLAB.|
 
 ### Processed signal fields
 
@@ -89,15 +94,24 @@ Raw EMG was band-pass filtered (4th-order Butterworth, 100–499 Hz passband) an
 
 | Field name | Description |
 |---|---|
-| `EMG30kf` | Filtered imEMG at 30,000 Hz. Present only for each participant's last three sessions. |
-| `EMG1kf` | Filtered imEMG at 1,000 Hz. |
-| `MAVs` | Mean absolute value, computed on the 30 kHz filtered data over fixed-width time windows (50 ms by default). |
+| `EMG30k_filt` | The 30 kHz data after the specified band-pass and notch filters were applied. Present only for each participant's last three sessions and only available in `.mat` form. |
+| `EMG1k_filt` | The 1 kHz resampled signal after the specified band-pass and notch filters were applied. |
+| `MAVs` | Mean absolute value, computed on the 30 kHz filtered data over fixed-width time windows (50 ms). |
 
 All EMG-related fields (`EMG30k(f)`, `EMG1k(f)`, `MAVs`) are matrices where each **column** is a channel/muscle and each **row** is a frame of data.
 
-### Movement labels
+### Companion flat-file exports (`.csv`)
 
-A string array, `movements`, lists the names and corresponding codes (`TaskNumber`) for every movement available across the dataset. This is also provided as `movements.json`.
+In addition to the `.mat` files, some fields in the `miDB` structs `EMG1k`, `EMG1k_filt`, `MAVs` have been exported as flat, comma separated files for use outside MATLAB:
+
+- **`P#_S#_MAVs.csv`** — MAVs for all channels as seen in corresponding `.mat` file across every available trial, including a `WindowStartTime` column (seconds) denoting the start of each 50 ms window.
+- **`P#_S#_EMG1kHz.csv`** — the *raw* 1 kHz EMG data for all channels across every available trial, including a `MovementCue` logical column derived from `RestTime`/`HoldTime`.
+- **`P#_S#_EMG1kHz_filt.csv`** — the 1 kHz *filtered* EMG data for all channels across every available trial, including a `MovementCue` logical column derived from `RestTime`/`HoldTime`
+
+All flat files can be joined back to a session's metadata (`P#_S#_meta.json`) via the shared `TrialID` field.
+
+### Movement labels
+A string array, `movements`, lists the names and corresponding codes (`TaskNumber`) for every movement available across the dataset. This is provided as `movements.json`.
 
 ---
 
@@ -116,14 +130,7 @@ EMG channel names for each participant are listed, in channel order, in that par
 
 ---
 
-## Companion flat-file exports
 
-In addition to the `.mat` files, the `miDB` structs have been exported as flat, comma separated files for use outside MATLAB:
-
-- **`P#_S#_MAVs.csv`** — MAVs for all channels across every available trial, including a `WindowStartTime` column (seconds) denoting the start of each 50 ms window.
-- **`P#_S#_EMG1kHz.csv`** — the 1 kHz EMG data for all channels across every available trial, including a `MovementCue` logical column derived from `RestTime`/`HoldTime`.
-
-Both flat files can be joined back to a session's metadata (`P#_S#_meta.json`) via the shared `TrialID` field.
 
 ---
 
@@ -135,8 +142,8 @@ Both flat files can be joined back to a session's metadata (`P#_S#_meta.json`) v
 
 ---
 
-## Data intial processing code
-The following excerpts of MATLAB code illustrate important data processing steps taken before data validation. For code related to data validaiton and classification, visit the companion GitHub repository: [gateslabs/miRPNI-processing](https://github.com/gateslabs/miRPNI-processing).
+## Initial data processing code
+The following excerpts of MATLAB code illustrate important data processing steps taken before data validation as outlined in the corresponding manuscript. For code related to data validation, classification, and visualization, visit the companion GitHub repository: [gateslabs/miRPNI-processing](https://github.com/gateslabs/miRPNI-processing).
 
 #### Filtering 30kHz data:
   ```matlab
@@ -234,7 +241,7 @@ for session = 1:numSessions
     [MAVs, Data1k, Data1kf, D30, D30f] = miDB2csv(miDB, idxx);
 
     mavfp = strcat(savepath, "\csv\",pID, "_S", num2str(session), '_MAVS.csv'); 
-    EMG1kfp = strcat(savepath, "\csv\",pID, "_S", num2str(session), '_EMG1kHz.csv');
+    EMG1kfp = strcat(savepath, "\csv\",pID, "_S", num2str(session), '_EMG1kHz_filt.csv');
    
     writematrix(MAVs,mavfp, 'Delimiter', 'comma'); 
     writematrix(Data1k,EMG1kfp, 'Delimiter', 'comma'); 
