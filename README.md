@@ -15,6 +15,8 @@ This repo is a set of starter notebooks and MATLAB scripts meant to get miRPNI u
 | File | Language | What it does |
 |---|---|---|
 | `mirpni.yaml` | conda | Environment spec with all Python dependencies |
+| `mirpni_utils.py` | Python | Shared loading helpers (`.mat` reading, channel-name lookup, CSV reshape) used by more than one notebook -- see [Notes / gotchas](#notes--gotchas) |
+| `load_channel_map.m` | MATLAB | Shared channel-name lookup used by both `.m` plotting scripts |
 | `mat_to_dataframe.ipynb` | Python | Loads a `.mat` session file into a tidy per-trial `pandas` DataFrame |
 | `csv_to_dataframe.ipynb` | Python | Loads a `.csv` + metadata-JSON session export into the same per-trial DataFrame shape |
 | `plot_emg.ipynb` | Python | Plots a single trial (or the mean across trials for a task) using the CSV pipeline |
@@ -55,6 +57,8 @@ Then launch Jupyter (or open the `.ipynb` files in VS Code / another notebook cl
 jupyter lab
 ```
 
+> **`mirpni_utils.py` must stay in the repo root** alongside the notebooks. They import it directly (`from mirpni_utils import ...`), which only resolves if Jupyter is launched from this folder, as shown above.
+
 ### MATLAB
 
 The `.m` scripts were written in MATLAB (R2025b) and use:
@@ -94,7 +98,9 @@ The sample data ships as a zip (e.g. `sample_set.zip`). Unzip it at the repo roo
 
 ## Data content
 
-Both `.mat` and `.csv` loading pipelines converge on the same shape: **one row per trial**, with the following fields:
+> **The `.csv` exports are a subset of the `.mat` files, not a full copy.** Only `EMG1k` (1 kHz raw), `EMG1kf` (1 kHz filtered), and `MAVs` are available as CSVs. The 30 kHz signals (`EMG30k`, `EMG30kf`) are only present in the `.mat` files. If your analysis needs the 30 kHz data, you'll need to work from the `.mat` files directly.
+
+Both `.mat` and `.csv` loading pipelines converge on the same shape for the fields they share: **one row per trial**, with the following fields:
 
 | Field | Meaning |
 |---|---|
@@ -114,7 +120,7 @@ Channel names (e.g. `FDPI`, `FCR`, `Ulnar RPNI`, `Median RPNI`, `EDC`, `EPL`, `F
 
 ## Quickstart: Python notebooks
 
-Pick **one** of the two loading pipelines depending on which sample file(s) you have (`.mat` or `.csv`) — both produce an equivalent `trial_meta` DataFrame.
+Pick one of the two loading pipelines depending on which sample file(s) you have (`.mat` or `.csv`) — both produce an equivalent `trial_meta` DataFrame.
 
 ### 1. Build a per-trial DataFrame
 
@@ -138,7 +144,7 @@ Run all cells; the final cell renders the figure inline.
 
 ### Plotting
 
-- `plot_emg_csv.m` — edit `DATA_PATH`, `CH_META_PATH`, `TRIAL_META_PATH` at the top to point at your sample files, set `TRIAL_ID`/`MOVEMENT_NUMBER`/`PLOT_MEAN`, then run the script. It produces a stacked grid of subplots, one per channel.
+- `plot_emg_csv.m` — edit `DATA_PATH`, `CH_META_PATH`, `TRIAL_META_PATH` at the top to point at your sample files, set `TRIAL_ID`/`TASK_NUMBER`/`PLOT_MEAN`, then run the script. It produces a stacked grid of subplots, one per channel.
 - `plot_emg_mat.m` — same idea, but reads straight from the session `.mat` file (`MAT_PATH`, expects a struct array named `miDB` by default — change `STRUCT_VAR` if your file uses a different variable name). You can also choose which signal to plot via `SIGNAL` (`'EMG1k'`, `'EMG1kf'`, `'EMG30k'`, or `'EMG30kf'`) and set `FS` to match (1000 Hz for the `*1k*` signals, 30000 Hz for `*30k*`).
 
 Both scripts have a commented-out `exportgraphics(...)` line at the bottom if you want to save the figure as a PNG instead of just viewing it.
@@ -165,11 +171,20 @@ These two scripts train simple decoders (decision tree, k-NN, LDA) on MAV featur
 
 ---
 
-## Notes / gotchas
+## Notes
 
 - **Array orientation**: MATLAB v7.3 (`.mat`) files loaded via `mat73`/`scipy.io` can come back transposed depending on how they were saved. Always check the printed shape in the sanity-check cell of `mat_to_dataframe.ipynb` before trusting downstream results, and flip `TRANSPOSE` if needed.
 - **Paths are hardcoded for the sample data**: every script/notebook has its file paths set as plain constants near the top (`MAT_PATH`, `CSV_PATH`, `DATA_PATH`, etc.), pointing at `sample_set/...` by default. Update them to point at wherever your copy of the real dataset lives — there's no config file or CLI args.
 - **`movements.json` is shared**: it's the one metadata file that isn't per-session — it maps `TaskNumber` → `TaskName` for the whole dataset.
+- **Shared code lives in `mirpni_utils.py` / `load_channel_map.m`**: `mat_to_dataframe.ipynb`, `csv_to_dataframe.ipynb`, and `plot_emg.ipynb` all import loading/channel-lookup helpers from `mirpni_utils.py` rather than each reimplementing them -- if you're adapting one of these notebooks and something looks missing, check there before assuming it's inline. The `.m` plotting scripts do the same via `load_channel_map.m`.
+
+## Next steps
+
+This repo is a starting point, not a complete analysis pipeline. Once you have a `trial_meta` table (Python) or the `miDB` struct (MATLAB) built by the notebooks/scripts above, you have everything needed to build your own feature extraction, classifiers, or visualizations on top of it.
+
+`miRPNIvalidation.m` and `miRPNIvalidationALLTrials.m` are themselves examples of this: simple decoding pipelines built directly on the same `miDB` struct the plotting scripts use. Use them as a template to adapt.
+
+The CSV-generation code included in the data repository's README (`miDB2csv.m`) is written the same way. If the default `.mat`/`.csv` exports don't cover what you need, it's meant to be a starting point for writing your own export script rather than something to use only as-is.
 
 ---
 
