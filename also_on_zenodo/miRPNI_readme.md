@@ -242,9 +242,12 @@ for session = 1:numSessions
 
     mavfp = strcat(savepath, "\csv\",pID, "_S", num2str(session), '_MAVS.csv'); 
     EMG1kfp = strcat(savepath, "\csv\",pID, "_S", num2str(session), '_EMG1kHz_filt.csv');
-   
+    EMG1k_filtfp = strcat(savepath, switch_name, "\csv\",switch_name, "_S", num2str(session), '_EMG1kHz_filt.csv');
+
     writematrix(MAVs,mavfp, 'Delimiter', 'comma'); 
     writematrix(Data1k,EMG1kfp, 'Delimiter', 'comma'); 
+    writematrix(Data1kf,EMG1k_filtfp, 'Delimiter', 'comma');
+
 
 end
 ```
