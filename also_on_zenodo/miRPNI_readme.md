@@ -138,7 +138,7 @@ EMG channel names for each participant are listed, in channel order, in that par
 
 [1] Vu, P. P., Vaskov, A. K., Lee, C., Jillala, R. R., Wallace, D. M., Davis, A. J., ... & Cederna, P. S. (2023). Long-term upper-extremity prosthetic control using regenerative peripheral nerve interfaces and implanted EMG electrodes. *Journal of Neural Engineering, 20*(2), 026039.
 
-[2] Nwokeabia, C. et al. (2026). miRPNI: A dataset of intramuscular electromyography from Regenerative Peripheral Nerve Interfaces and residual muscles. Zenodo. https://doi.org/10.5281/ZENODO.21268334
+[2] Nwokeabia, C. et al. (2026). miRPNI: A dataset of intramuscular electromyography from Regenerative Peripheral Nerve Interfaces and residual muscles. Zenodo. https://doi.org/10.5281/zenodo.20739025
 
 ---
 
