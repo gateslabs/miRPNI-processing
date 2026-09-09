@@ -191,7 +191,7 @@ The CSV-generation code included in the data repository's README (`miDB2csv.m`) 
 
 If you use this code or the miRPNI dataset, please cite:
 
-> Nwokeabia, C. et al. miRPNI: A dataset of intramuscular electromyography from Regenerative Peripheral Nerve Interfaces and residual muscles. Zenodo (2026). https://doi.org/10.5281/ZENODO.21268334
+> Nwokeabia, C. et al. miRPNI: A dataset of intramuscular electromyography from Regenerative Peripheral Nerve Interfaces and residual muscles. Zenodo (2026). https://doi.org/10.5281/zenodo.20739025
 
 ## License
 
