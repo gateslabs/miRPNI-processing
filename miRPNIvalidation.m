@@ -2,6 +2,7 @@ function validations = miRPNIvalidation(miDB, moveset, json_filepath, win_ms)
 % MIRPNIVALIDATION  Train and cross-validate 3 simple classifiers on one
 % session's worth of miRPNI trials.
 %
+%   assuming that the structure array miDB is already loaded within the workspace:
 %   validations = miRPNIvalidation(miDB, moveset, json_filepath)
 %   validations = miRPNIvalidation(miDB, moveset, json_filepath, win_ms)
 %
