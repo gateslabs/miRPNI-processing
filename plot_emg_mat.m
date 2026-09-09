@@ -21,7 +21,7 @@ clear; clc;
 
 %% Settings ──────────────────────────────────────────────────────────────
 % Which session to load.
-MAT_PATH        = 'P1_S2_EMG.mat';
+MAT_PATH        = 'sample_set/mat/P1_S12_EMG.mat';
 STRUCT_VAR      = 'miDB';            % name of the struct array inside the .mat file
 CH_META_PATH    = 'sample_set/meta/P1_metadata.json';
 

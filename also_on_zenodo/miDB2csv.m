@@ -1,6 +1,6 @@
 function [MAVs, Data1k, Data1kf, Data30k, Data30kf] = miDB2csv(inDB, numchans)
 
-% i think i'll split them into separate vals , mavs and emg1k/f
+% fields split into separate csv files
 % cant do 30k cause too big
 disp('converting to csv')
 
@@ -71,8 +71,8 @@ MAVs = mavtestmat;
 Data1k = emg1ktestmat;
 Data1kf = emg1kftestmat;
 
-% %% adding 30k data if it extists:
-% if isfield(inDB,'EMG30kf')
+% adding 30k data if it exists -- skipped due to data repo size constraints
+% if isfield(inDB,'EMG30k_filt')
 %     [Data30k, Data30kf] = miDB30k2csv(inDB,numchans);
 % else
 %     disp('no 30k data here!')

@@ -69,8 +69,8 @@ for fileIdx = 1:numel(matfiles)
     if isfield(miDB, "EMG30k")
         miDB = rmfield(miDB, "EMG30k");
     end
-    if isfield(miDB, "EMG30kf")
-        miDB = rmfield(miDB, "EMG30kf");
+    if isfield(miDB, "EMG30k_filt")
+        miDB = rmfield(miDB, "EMG30k_filt");
     end
 
     if set == 1
