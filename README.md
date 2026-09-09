@@ -81,7 +81,8 @@ miRPNI-processing/
 │   ├── mat/
 │   │   └── P1_S12_EMG.mat # one session, v7.3 struct array ("miDB")
 │   ├── csv/
-│   │   └── P1_S12_EMG1kHz.csv  # same session as a long-format CSV
+│   │   ├── P1_S12_EMG1kHz.csv  # same session as a long-format CSV
+    │   └── P1_S12_EMG1kHz_filt.csv  # same session as a long-format CSV with filtered 1 kHz data  
 │   └── meta/
 │       ├── P1_S12_meta.json    # per-trial metadata for that session
 │       └── P1_metadata.json    # per-channel metadata for that participant

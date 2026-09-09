@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - pip
-  - python
+  - python=3.14.7
   - pip:
       - h5py==3.16.0
       - ipykernel==7.3.0
