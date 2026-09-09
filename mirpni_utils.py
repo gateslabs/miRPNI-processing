@@ -109,3 +109,19 @@ def build_trial_meta_from_csv(csv_path, meta_path, tasks_path):
     trial_meta = trial_meta.merge(tasks[['TaskNumber', 'TaskName']], on='TaskNumber', how='left')
 
     return trial_meta, len(channel_cols)
+
+def normalize_struct_array(struct):
+    """Normalize a MATLAB struct array to a plain list of dicts, one per trial.
+
+    load_mat_any's return shape for a struct array depends on which loader
+    handled the file: mat73 (HDF5 / v7.3) comes back "columnar" -- a dict
+    where each field name maps to an array of per-trial values -- while
+    scipy (with simplify_cells=True) comes back "row-wise" -- already a
+    list of one dict per trial. This collapses both into the row-wise shape
+    every time, so nothing downstream has to know or care which loader ran.
+    """
+    if isinstance(struct, dict):
+        keys = list(struct.keys())
+        n = len(struct[keys[0]])
+        return [{k: struct[k][i] for k in keys} for i in range(n)]
+    return list(struct)
