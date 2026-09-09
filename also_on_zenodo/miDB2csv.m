@@ -4,7 +4,7 @@ disp('converting to csv')
 
 mavtestmat = [];
 emg1ktestmat = [];
-emg1kftestmat = [];
+EMG1k_filttestmat = [];
 
 Fs = 1000; %change to desired fs
 
@@ -25,13 +25,13 @@ for i = 1:length(inDB)
     timevec_1k = [restvec_1k;cuevec_1k];
     trialvec_1k = i*ones(size(timevec_1k));
     
-    EMG1kf = inDB(i).EMG1kf;
+    EMG1k_filt = inDB(i).EMG1k_filt;
     EMG1k = inDB(i).EMG1k;
 
     emg1_node = [trialvec_1k, timevec_1k, EMG1k];
     emg1ktestmat = [emg1ktestmat; emg1_node];
 
-    emg1f_node = [trialvec_1k, timevec_1k, EMG1kf];
+    emg1f_node = [trialvec_1k, timevec_1k, EMG1k_filt];
     emg1kftestmat = [emg1kftestmat; emg1f_node];
 
     %creating time vector for new MAV calculations
@@ -56,7 +56,7 @@ mavhead = ["TrialID", "WindowStartTime"];
 
 for i = 1:numchans
     emg1head(:,i+2) = append("EMG1k_",num2str(i));
-    emg1fhead(:,i+2) = append("EMG1kf_",num2str(i));
+    emg1fhead(:,i+2) = append("EMG1k_filt_",num2str(i));
     mavhead(:,i+2) = append("MAV_",num2str(i));
 end
 

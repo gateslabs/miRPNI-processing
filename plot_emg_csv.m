@@ -34,19 +34,19 @@ PLOT_MEAN       = false;
 
 %% Load metadata ─────────────────────────────────────────────────────────
 % Channel names, ordered by channel number.
-ch_raw    = jsondecode(fileread(CH_META_PATH));
-ch_nums   = [ch_raw.channelNumber];
-ch_names  = {ch_raw.channelName};
+ch_unfilt    = jsondecode(fileread(CH_META_PATH));
+ch_nums   = [ch_unfilt.channelNumber];
+ch_names  = {ch_unfilt.channelName};
 [~, idx]  = sort(ch_nums);
 ch_names  = ch_names(idx);   % 1 x n_channels cell, ordered by channel number
 
 % Trial-level metadata (one row per trial). Unlike the .mat version, this
 % has to be loaded from a separate file, since the CSV itself only has
 % per-timepoint rows and a TrialID to tie them together.
-tr_raw     = jsondecode(fileread(TRIAL_META_PATH));
-trial_ids  = [tr_raw.TrialID]';
-task_nums  = [tr_raw.TaskNumber]';
-trial_nums = [tr_raw.TrialNumber]';
+tr_unfilt     = jsondecode(fileread(TRIAL_META_PATH));
+trial_ids  = [tr_unfilt.TrialID]';
+task_nums  = tr_unfilt.TaskNumber]';
+trial_nums = [tr_unfilt.TrialNumber]';
 
 trial_meta = table(trial_ids, task_nums, trial_nums, ...
     'VariableNames', {'TrialID','TaskNumber','TrialNumber'});
@@ -56,7 +56,7 @@ fprintf('Trials   : %d | Tasks: %s\n', height(trial_meta), ...
     num2str(unique(task_nums)'));
 
 %% Load EMG data ─────────────────────────────────────────────────────────
-% The raw CSV has one row per timepoint per trial. To make it plottable we
+% The unfiltered CSV has one row per timepoint per trial. To make it plottable we
 % need two things it doesn't already have: a within-trial time axis (so we
 % know where each row falls in the trial, not just which trial it's from),
 % and the TaskNumber for each row (so we can filter/average by task).

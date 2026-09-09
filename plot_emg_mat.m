@@ -9,7 +9,7 @@
 % Expects the .mat file to contain a struct array (default name: "miDB")
 % with one element per trial, and fields:
 %   TrialID, TaskNumber, TrialNumber, RestTime, HoldTime,
-%   EMG30k, EMG30kf, EMG1k, EMG1kf, MAVs
+%   EMG30k, EMG30k_filt, EMG1k, EMG1k_filt, MAVs
 % Each EMG field is a [n_samples x n_channels] matrix for that trial.
 % Channel names still come from the participant's metadata.json, since the
 % .mat file itself only has channel numbers, not names.
@@ -26,8 +26,8 @@ STRUCT_VAR      = 'miDB';            % name of the struct array inside the .mat 
 CH_META_PATH    = 'sample_set/meta/P1_metadata.json';
 
 % Which signal to plot. Use the *f versions for the filtered signal (see
-% the dataset README for filter details), or the un-f versions for raw.
-SIGNAL          = 'EMG1kf';             % 'EMG1k' | 'EMG1kf' | 'EMG30k' | 'EMG30kf'
+% the dataset README for filter details), or the unfiltered versions.
+SIGNAL          = 'EMG1k_filt';             % 'EMG1k' | 'EMG1k_filt' | 'EMG30k' | 'EMG30k_filt'
 FS              = 1000;                % sampling rate (Hz) for SIGNAL -- 1000 for *1k, 30000 for *30k
 
 % What to plot. Only one of TRIAL_ID / TASK_NUMBER is used at a time,
@@ -41,9 +41,9 @@ PLOT_MEAN       = false;
 %% Load metadata ─────────────────────────────────────────────────────────
 % Channel names still come from JSON -- the .mat file has no names, only
 % column positions, so this is the only place we need the metadata JSON.
-ch_raw   = jsondecode(fileread(CH_META_PATH));
-ch_nums  = [ch_raw.channelNumber];
-ch_names = {ch_raw.channelName};
+ch_unfilt   = jsondecode(fileread(CH_META_PATH));
+ch_nums  = [ch_unfilt.channelNumber];
+ch_names = {ch_unfilt.channelName};
 [~, idx] = sort(ch_nums);
 ch_names = ch_names(idx);              % 1 x n_channels cell, ordered by channel number
 
