@@ -66,7 +66,7 @@ Each `.mat` file can be paired with the corresponding session's per-trial metada
 
 ## Data structure
 ### Complete EMG data exports (`.mat`)
-EMG data (raw and filtered) is available in 1000 Hz via `.csv` files, while raw and filtered data at 1000 Hz and 30000 Hz is available in `.mat` files.
+EMG data (unfiltered and filtered) are available in 1000 Hz via `.csv` files, while unfiltered and filtered data at 1000 Hz and 30000 Hz is available in `.mat` files.
 
  Each `.mat` file contains a single struct variable named **`miDB`**, with one element per trial.
 
@@ -78,7 +78,7 @@ EMG data (raw and filtered) is available in 1000 Hz via `.csv` files, while raw 
 | `TaskNumber` | Code for the specific movement (individual finger movement, wrist movment, or functional grasp) completed during a given trial. The corresponding movement name is listed in `movements.json`. |
 | `TrialNumber` | Repetition number for the hand gesture completed during a given trial (i.e. 1-5).|
 | `RestTime` | Time in the trial (ms) where no movement was cued. |
-| `HoldTime` | Time in the trial (ms) where the movement was cued/expected. |
+| `HoldTime` | Time in the trial (ms) where the movement was cued.|
 
 
 ### Raw signal fields
@@ -90,7 +90,7 @@ EMG data (raw and filtered) is available in 1000 Hz via `.csv` files, while raw 
 
 ### Processed signal fields
 
-Raw EMG was band-pass filtered (4th-order Butterworth, 100–499 Hz passband) and notch-filtered to remove 60 Hz line noise and its harmonics (60, 120, 180, 240, 300, 360, 420, 480 Hz). This filtered signal populates:
+30kHz and 1kHz EMG data were band-pass filtered (4th-order Butterworth, 100–499 Hz passband) and notch-filtered to remove 60 Hz line noise and its harmonics (60, 120, 180, 240, 300, 360, 420, 480 Hz). This filtered signal populates:
 
 | Field name | Description |
 |---|---|
@@ -98,7 +98,7 @@ Raw EMG was band-pass filtered (4th-order Butterworth, 100–499 Hz passband) an
 | `EMG1k_filt` | The 1 kHz resampled signal after the specified band-pass and notch filters were applied. |
 | `MAVs` | Mean absolute value, computed on the 30 kHz filtered data over fixed-width time windows (50 ms). |
 
-All EMG-related fields (`EMG30k(f)`, `EMG1k(f)`, `MAVs`) are matrices where each **column** is a channel/muscle and each **row** is a frame of data.
+All EMG-related fields (`EMG30k(_filt)`, `EMG1k(_filt)`) are matrices where each column is an EMG channel for a residual muscle or RPNI and each row is a frame of data. For the `MAVs` field, each column is an EMG channel for a residual muscle or RPNI, but each row is the calculated mean absolute value over each nonoverlapping window.
 
 ### Companion flat-file exports (`.csv`)
 
@@ -166,11 +166,11 @@ disp('filtering 30 khz data')
 for i = 1:length(miDB)
     disp(['filtering for task i = ', num2str(i)])
     disp('bandpass: 100-500 hz')
-    miDB(i).EMG30kf = filter(b(1,:), a(1,:),  miDB(i).EMG30k);
+    miDB(i).EMG30k_filt = filter(b(1,:), a(1,:),  miDB(i).EMG30k);
 
     disp('notch filter at 60 hz and harmonics')
     for j = 1:8
-        miDB(i).EMG30kf = filter(d(j,:), c(j,:), miDB(i).EMG30kf);
+        miDB(i).EMG30k_filt = filter(d(j,:), c(j,:), miDB(i).EMG30k_filt);
     end
 end
   ```
@@ -180,14 +180,14 @@ disp('downsampling 30k data')
 for i = 1:length(miDB)
     disp(['downsampling for task i = ', num2str(i)])
     % using resample to downsample the data to ensure antialiasing
-    miDB(i).EMG1kf = resample(miDB(i).EMG30kf, 1, 30); %downsampling down all channel columns
+    miDB(i).EMG1k_filt = resample(miDB(i).EMG30k_filt, 1, 30); %downsampling down all channel columns
     miDB(i).EMG1k = resample(miDB(i).EMG30k, 1, 30); %downsampling raw data, too
 end
 ```
 #### Calculating MAVs from 30 kHz EMG data:
 ```matlab
 for i = 1:numel(inDB)
-        emg_filt = inDB(i).EMG30kf; %grabbing 30k data: should be [numsamps x numchans]
+        emg_filt = inDB(i).EMG30k_filt; %grabbing 30k data: should be [numsamps x numchans]
         n_windows = floor(size(emg_filt, 1) / win_samples);  % = 160 windows (default)
         emg_trimmed = emg_filt(1 : n_windows * win_samples, :);
         
@@ -231,7 +231,7 @@ end
 #### Convert and save miDB MATLAB structs as csv files
 This code uses the custom script **`miDB2csv.m`**, which is available in this data repo.
 ```matlab
-%% convert and save miDB as csv files: 1k, 1kf, mavs:(miDB2csv.m)
+%% convert and save miDB as csv files: 1k, 1k_filt, mavs:(miDB2csv.m)
 for session = 1:numSessions
     fprintf('session %d \n', session);
     disp('loading emg data')

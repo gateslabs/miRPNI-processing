@@ -4,7 +4,7 @@ Exploratory scripts for loading and visualizing data from the **miRPNI dataset**
 
 This repo is a set of starter notebooks and MATLAB scripts meant to get miRPNI users from the raw dataset files on Zenodo (`.mat` or `.csv` + metadata JSONs) to a usable per-trial table, some plots, and a simple movement classifier. 
 
-> A small sample dataset (`sample_set/`) will be added to this repo separately. This README assumes you have that sample data — see [Getting the sample data](#getting-the-sample-data) below for the exact folder layout the scripts expect.
+> This README assumes you have that sample data — see [Getting the sample data](#getting-the-sample-data) below for the exact folder layout the scripts expect.
 
 [1] Nwokeabia, C. et al. *miRPNI: A dataset of intramuscular electromyography from Regenerative Peripheral Nerve Interfaces and residual muscles.* Zenodo (2026). https://doi.org/10.5281/zenodo.20739025
 
@@ -16,7 +16,7 @@ This repo is a set of starter notebooks and MATLAB scripts meant to get miRPNI u
 |---|---|---|
 | `mirpni.yaml` | conda | Environment spec with all Python dependencies |
 | `mirpni_utils.py` | Python | Shared loading helpers (`.mat` reading, channel-name lookup, CSV reshape) used by more than one notebook -- see [Notes](#notes--gotchas) |
-| `mat_to_dataframe.ipynb` | Python | Loads a `.mat` session file into a tidy per-trial `pandas` DataFrame |
+| `mat_to_dataframe.ipynb` | Python | Loads a `.mat` session file into a  per-trial `pandas` DataFrame |
 | `csv_to_dataframe.ipynb` | Python | Loads a `.csv` + metadata-JSON session export into the same per-trial DataFrame shape |
 | `plot_emg.ipynb` | Python | Plots a single trial (or the mean across trials for a task) using the CSV pipeline |
 | `plot_emg_mat.m` | MATLAB | Same single-trial / mean-across-task plot, reading directly from a `.mat` file |
@@ -97,7 +97,7 @@ The sample data ships as a zip (e.g. `sample_set.zip`). Unzip it at the repo roo
 
 ## Data content
 
-> **The `.csv` exports are a subset of the `.mat` files, not a full copy.** Only `EMG1k` (1 kHz raw), `EMG1kf` (1 kHz filtered), and `MAVs` are available as CSVs. The 30 kHz signals (`EMG30k`, `EMG30kf`) are only present in the `.mat` files. If your analysis needs the 30 kHz data, you'll need to work from the `.mat` files directly.
+> **The `.csv` exports are a subset of the `.mat` files, not a full copy.** Only `EMG1k` (1 kHz unfiltered), `EMG1k_filt` (1 kHz filtered), and `MAVs` are available as CSVs. The 30 kHz signals (`EMG30k`, `EMG30k_filt`) are only present in the `.mat` files. If your analysis needs the 30 kHz data, you'll need to work from the `.mat` files directly.
 
 Both `.mat` and `.csv` loading pipelines converge on the same shape for the fields they share: **one row per trial**, with the following fields:
 
@@ -109,8 +109,8 @@ Both `.mat` and `.csv` loading pipelines converge on the same shape for the fiel
 | `TrialNumber` | Repetition number of that movement within the session |
 | `RestTime` / `HoldTime` | Timing (ms) of the rest and hold/movement periods within the trial |
 | `EMG1k` | `(numSamples × numChannels)` array — 1 kHz EMG for the trial. This field is present in both `.mat` and `.csv` files.|
-| `EMG1kf` | Filtered version of `EMG1k`. This field is present in both `.mat` and `.csv` files. |
-| `EMG30k` / `EMG30kf` | Raw/filtered 30 kHz EMG (**present in the `.mat` files only**; dropped by `miRPNIvalidationALLTrials.m` before concatenating sessions) |
+| `EMG1k_filt` | Filtered version of `EMG1k`. This field is present in both `.mat` and `.csv` files. |
+| `EMG30k` / `EMG30k_filt` | Unfiltered/filtered 30 kHz EMG (**present in the `.mat` files only**; dropped by `miRPNIvalidationALLTrials.m` before concatenating sessions) |
 | `MAVs` | Mean absolute value features per time window (used by the validation scripts) |
 
 Channel names (e.g. `FDPI`, `FCR`, `Ulnar RPNI`, `Median RPNI`, `EDC`, `EPL`, `FDPS`, `FPL`) come from the participant's `P#_metadata.json`, ordered by `channelNumber` — they are **not** stored in the `.mat`/`.csv` data itself.
@@ -144,7 +144,7 @@ Run all cells; the final cell renders the figure inline.
 ### Plotting
 
 - `plot_emg_csv.m` — edit `DATA_PATH`, `CH_META_PATH`, `TRIAL_META_PATH` at the top to point at your sample files, set `TRIAL_ID`/`TASK_NUMBER`/`PLOT_MEAN`, then run the script. It produces a stacked grid of subplots, one per channel.
-- `plot_emg_mat.m` — same idea, but reads straight from the session `.mat` file (`MAT_PATH`, expects a struct array named `miDB` by default. Change `STRUCT_VAR` if your file uses a different variable name). You can also choose which signal to plot via `SIGNAL` (`'EMG1k'`, `'EMG1kf'`, `'EMG30k'`, or `'EMG30kf'`) and set `FS` to match (1000 Hz for the `*1k*` signals, 30000 Hz for `*30k*`).
+- `plot_emg_mat.m` — same idea, but reads straight from the session `.mat` file (`MAT_PATH`, expects a struct array named `miDB` by default. Change `STRUCT_VAR` if your file uses a different variable name). You can also choose which signal to plot via `SIGNAL` (`'EMG1k'`, `'EMG1k_filt'`, `'EMG30k'`, or `'EMG30k_filt'`) and set `FS` to match (1000 Hz for the `*1k*` signals, 30000 Hz for `*30k*`).
 
 Both scripts have a commented-out `exportgraphics(...)` line at the bottom if you want to save the figure as a PNG instead of just viewing it.
 
@@ -166,7 +166,7 @@ These two scripts train simple decoders (decision tree, k-NN, LDA) on MAV featur
   matFiles = {'sample_set/mat/P1_S12_EMG.mat'};  % add more session files as you get them
   results = miRPNIvalidationALLTrials(matFiles, 1, 'sample_set/movements.json');
   ```
-  It calls `load(fname)` on each file directly (rather than taking a path argument like `plot_emg_mat.m`), so run it from a working directory where those relative paths resolve, or use full paths in `matFiles`. `EMG30k`/`EMG30kf` are dropped before concatenation to keep things light.
+  It calls `load(fname)` on each file directly (rather than taking a path argument like `plot_emg_mat.m`), so run it from a working directory where those relative paths resolve, or use full paths in `matFiles`. `EMG30k`/`EMG30k_filt` are dropped before concatenation to keep things light.
 
 ---
 
