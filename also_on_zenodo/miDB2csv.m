@@ -1,18 +1,20 @@
 function [MAVs, Data1k, Data1kf, Data30k, Data30kf] = miDB2csv(inDB, numchans)
 
+% i think i'll split them into separate vals , mavs and emg1k/f
+% cant do 30k cause too big
 disp('converting to csv')
 
 mavtestmat = [];
 emg1ktestmat = [];
-EMG1k_filttestmat = [];
+emg1kftestmat = [];
 
-Fs = 1000; %change to desired fs
+Fs = 1000;
 
 for i = 1:length(inDB) 
     restime = inDB(i).RestTime;  % duration in ms
     cuetime = inDB(i).HoldTime;  % duration in ms
     
-    %adding a logical vector for rest and cue times, sttarting with the 1000
+    %adding a logical vector for rest and cue times, starting with the 1000
     %hz data
     disp('concatenating 1khz EMG data for csv export')
 

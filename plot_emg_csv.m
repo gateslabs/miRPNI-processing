@@ -45,7 +45,7 @@ ch_names  = ch_names(idx);   % 1 x n_channels cell, ordered by channel number
 % per-timepoint rows and a TrialID to tie them together.
 tr_unfilt     = jsondecode(fileread(TRIAL_META_PATH));
 trial_ids  = [tr_unfilt.TrialID]';
-task_nums  = tr_unfilt.TaskNumber]';
+task_nums  = [tr_unfilt.TaskNumber]';
 trial_nums = [tr_unfilt.TrialNumber]';
 
 trial_meta = table(trial_ids, task_nums, trial_nums, ...
