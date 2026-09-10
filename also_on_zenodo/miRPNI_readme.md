@@ -53,7 +53,7 @@ or
 <ParticipantID>_<SessionNumber>_<DataCategory>.csv
 ```
 
-For example, Participant 1's data for session 8 is `P1_S8_EMG.mat`. Participant 2's MAVs for session 12 are availale in `P2_S12_MAVS.csv`.
+For example, Participant 1's data for session 8 is `P1_S8_EMG.mat`. Participant 2's MAVs for session 12 are available in `P2_S12_MAVS.csv`.
 
 Data were originally sampled at 30 kHz but downsampled to 1 kHz for most sessions to save space. The 30 kHz data is retained for each participant's last three available sessions in their respective `.mat` files:
 
