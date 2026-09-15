@@ -41,6 +41,23 @@ Data were collected between June 2018 and May 2024 at the University of Michigan
 
 ---
 
+## NOTE: Folder organization
+
+The dataset's files are split into individual folders for each participant for more flexibility when downloading. The processing code in the [corresponding Github repository](https://github.com/gateslabs/miRPNI-processing) follows this folder organization scheme for dataset processing:
+
+```
+PX/
+├── csv/
+├── mat/
+├── meta/
+├── movements.json
+└── PX_notes.txt
+```
+
+The `sample_set.zip` file contains all data from single collection session for Participant 1. This file can be downloaded as is and *does not* need to be reorganized when going through the code on our Github repo. 
+
+---
+
 ## File organization
 
 There are up to twelve evenly spaced sessions per participant (42 files total). Session files follow the naming convention:
@@ -53,7 +70,7 @@ or
 <ParticipantID>_<SessionNumber>_<DataCategory>.csv
 ```
 
-For example, Participant 1's data for session 8 is `P1_S8_EMG.mat`. Participant 2's MAVs for session 12 are available in `P2_S12_MAVS.csv`.
+For example, Participant 1's data for session 8 is `P1_S8_EMG.mat`. Participant 2's MAVs for session 12 are availale in `P2_S12_MAVS.csv`.
 
 Data were originally sampled at 30 kHz but downsampled to 1 kHz for most sessions to save space. The 30 kHz data is retained for each participant's last three available sessions in their respective `.mat` files:
 
@@ -242,12 +259,9 @@ for session = 1:numSessions
 
     mavfp = strcat(savepath, "\csv\",pID, "_S", num2str(session), '_MAVS.csv'); 
     EMG1kfp = strcat(savepath, "\csv\",pID, "_S", num2str(session), '_EMG1kHz_filt.csv');
-    EMG1k_filtfp = strcat(savepath, switch_name, "\csv\",switch_name, "_S", num2str(session), '_EMG1kHz_filt.csv');
-
+   
     writematrix(MAVs,mavfp, 'Delimiter', 'comma'); 
     writematrix(Data1k,EMG1kfp, 'Delimiter', 'comma'); 
-    writematrix(Data1kf,EMG1k_filtfp, 'Delimiter', 'comma');
-
 
 end
 ```

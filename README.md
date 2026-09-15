@@ -96,6 +96,23 @@ The sample data ships as a zip (e.g. `sample_set.zip`). Unzip it at the repo roo
 
 ---
 
+## NOTE: Folder organization
+
+The dataset's files are split into individual folders for each participant for more flexibility when downloading. The processing code in the [corresponding Github repository](https://github.com/gateslabs/miRPNI-processing) follows this folder organization scheme for dataset processing:
+
+```
+PX/
+├── csv/
+├── mat/
+├── meta/
+├── movements.json
+└── PX_notes.txt
+```
+
+The `sample_set.zip` file contains all data from single collection session for Participant 1. This file can be downloaded as is and *does not* need to be reorganized when going through the code on our Github repo. 
+
+---
+
 ## Data content
 
 > **The `.csv` exports are a subset of the `.mat` files, not a full copy.** Only `EMG1k` (1 kHz unfiltered), `EMG1k_filt` (1 kHz filtered), and `MAVs` are available as CSVs. The 30 kHz signals (`EMG30k`, `EMG30k_filt`) are only present in the `.mat` files. If your analysis needs the 30 kHz data, you'll need to work from the `.mat` files directly.
