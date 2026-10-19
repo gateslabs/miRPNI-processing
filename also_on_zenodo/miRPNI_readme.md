@@ -72,10 +72,6 @@ or
 
 For example, Participant 1's data for session 8 is `P1_S8_EMG.mat`. Participant 2's MAVs for session 12 are availale in `P2_S12_MAVS.csv`.
 
-Data were originally sampled at 30 kHz but downsampled to 1 kHz for most sessions to save space. The 30 kHz data is retained for each participant's last three available sessions in their respective `.mat` files:
-
-- Sessions 7, 8, 9 for P1 and P2
-- Sessions 10, 11, 12 for P3 and P4
 
 Each `.mat` file can be paired with the corresponding session's per-trial metadata file (`P#_S#_meta.json`) via the shared `TrialID` field, and with the participant's channel metadata (`P#_metadata.json`). A single `movements.json` file (shared across the whole dataset) maps `TaskNumber` to movement name.
 
@@ -102,7 +98,7 @@ EMG data (unfiltered and filtered) are available in 1000 Hz via `.csv` files, wh
 
 | Field name | Description |
 |---|---|
-| `EMG30k` | Raw imEMG sampled at 30,000 Hz. Present only for each participant's last three sessions and only in `.mat` form (see above). |
+| `EMG30k` | Raw imEMG sampled at 30,000 Hz.|
 | `EMG1k` |imEMG downsampled to 1,000 Hz using the `resample` function in MATLAB.|
 
 ### Processed signal fields
@@ -111,7 +107,7 @@ EMG data (unfiltered and filtered) are available in 1000 Hz via `.csv` files, wh
 
 | Field name | Description |
 |---|---|
-| `EMG30k_filt` | The 30 kHz data after the specified band-pass and notch filters were applied. Present only for each participant's last three sessions and only available in `.mat` form. |
+| `EMG30k_filt` | The 30 kHz data after the specified band-pass and notch filters were applied.|
 | `EMG1k_filt` | The 1 kHz resampled signal after the specified band-pass and notch filters were applied. |
 | `MAVs` | Mean absolute value, computed on the 30 kHz filtered data over fixed-width time windows (50 ms). |
 
