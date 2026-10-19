@@ -73,7 +73,7 @@ No MATLAB package manager setup is needed — just open the `.m` files in MATLAB
 ## Getting the sample data
 
 The scripts expect a `sample_set/` folder at the repo root that you must add locally. Unzip the folder so the layout looks like this:
-The sample set can be downloaded [here](https://zenodo.org/records/23377398/files/sample_set.zip?download=1). 
+The sample set can be found on [Zenodo](https://doi.org/10.5281/zenodo.20739025) or directly downloaded [here](https://zenodo.org/records/23377398/files/sample_set.zip?download=1). 
 ```
 miRPNI-processing/
 ├── sample_set/
