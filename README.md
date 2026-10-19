@@ -194,6 +194,21 @@ These two scripts train simple decoders (decision tree, k-NN, LDA) on MAV featur
 - **Paths are hardcoded for the sample data**: every script/notebook has its file paths set as plain constants near the top (`MAT_PATH`, `CSV_PATH`, `DATA_PATH`, etc.), pointing at `sample_set/...` by default. Update them to point at wherever your copy of the real dataset lives.
 - **`movements.json` is shared**: it maps `TaskNumber` → `TaskName` for the whole dataset.
 + **Shared code lives in `mirpni_utils.py`**: `mat_to_dataframe.ipynb`, `csv_to_dataframe.ipynb`, and `plot_emg.ipynb` all import loading/channel-lookup helpers from `mirpni_utils.py` rather than each reimplementing them. If you're adapting one of these notebooks and something looks missing, check there before assuming it's inline. The `.m` plotting scripts (`plot_emg_mat.m`, `plot_emg_csv.m`) each do their own channel-name lookup inline instead, since MATLAB doesn't have an equivalent shared-import pattern for this repo's script-based (non-package) layout.
+- The CSV variable `MovementCue` was created to more easily identify rest and movement periods for imEMG processing and classification. The below code snippet shows how that variable is derived. Implementation of this can be found in `miDB2csv.m` in the dataset repository:
+```matlab
+Fs = 1000;
+
+for i = 1:length(inDB) 
+    restime = inDB(i).RestTime;  % duration in ms
+    cuetime = inDB(i).HoldTime;  % duration in ms
+    restSamples_1k = restime * (Fs / 1000); 
+    cueSamples_1k  = cuetime * (Fs / 1000);   
+    restvec_1k = zeros([restSamples_1k, 1]);
+    cuevec_1k  = ones([cueSamples_1k, 1]);
+    timevec_1k = [restvec_1k;cuevec_1k];
+end
+```
+
 
 ## Next steps
 
