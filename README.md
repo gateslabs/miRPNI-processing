@@ -38,6 +38,7 @@ All notebooks use the same conda environment, defined in `mirpni.yaml`:
 - `numpy`, `pandas`, `scipy`
 - `h5py`, `mat73` (for reading MATLAB v7.3 `.mat` files)
 - `matplotlib`
+- `jupyterlab`
 - `ipykernel` (to run the notebooks in Jupyter/VS Code)
 
 Create and activate the environment with [conda](https://docs.conda.io/) or [mamba](https://mamba.readthedocs.io/):
